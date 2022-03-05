@@ -9,5 +9,5 @@ public:
 
 	int hashCode();
 
-	string toString();
+	std::string toString();
 };
