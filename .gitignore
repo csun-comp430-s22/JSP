@@ -1,1 +1,15 @@
 .vs/
+*.tlog
+*.exe
+*.pdb
+*.lastbuildstate
+*.idb
+*.obj
+*.log
+*.ilk
+*.recipe
+*.user
+*.filters
+*.vcxproj
+*.sln
+*Comp430Lexer
