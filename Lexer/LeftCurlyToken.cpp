@@ -2,19 +2,19 @@
 #include <string>
 using namespace std;
 
-class Tokens : public Token {
+class LeftCurl : public Token{
 	bool Token::equals()
 	{
-	
+
 	}
 
 	int Token::hashCode()
 	{
-		return 0;
+		return 5;
 	}
 
 	string Token::toString()
 	{
-		return "true";
+		return "{";
 	}
 };
