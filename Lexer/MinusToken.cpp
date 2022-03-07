@@ -2,7 +2,7 @@
 #include <string>
 using namespace std;
 
-class String : public Token {
+class Minus : public Token {
 	bool Token::equals()
 	{
 
@@ -10,11 +10,11 @@ class String : public Token {
 
 	int Token::hashCode()
 	{
-		return 16;
+		return 8;
 	}
 
 	string Token::toString()
 	{
-		return "string";
+		return "-";
 	}
 };
