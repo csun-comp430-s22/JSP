@@ -10,6 +10,6 @@ public class DivideToken implements Token{
 	}
 	
 	public String toString(){
-		return "/"
+		return "/";
 	}
 }
