@@ -6,7 +6,7 @@ public class IntegerToken implements Token{
 	}
 	
 	public int hashCode(){
-		return 3;
+		return 10;
 	}
 	
 	public String toString(){
