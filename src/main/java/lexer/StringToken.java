@@ -12,7 +12,7 @@ public class StringToken implements Token {
 
     public String toString() {
 
-        return "Str";
+        return "String";
     }
 
 }

@@ -3,3 +3,4 @@ src/main/java/lexer/.gitignore
 /bin/
 .classpath
 .project
+src/main/java/lexer/.metadata/
