@@ -1,4 +1,4 @@
-package comp430;
+package lexer;
 
 import java.util.List;
 
@@ -10,126 +10,88 @@ import static org.junit.Assert.fail;
 import org.junit.Test;
 
 public class TokenizerTest {
+	public void assertTokenizes(final String input, final Token[] expected) throws TokenizerException {
+		final Tokenizer tokenizer = new Tokenizer(input);
+		final List<Token> received = tokenizer.tokenize();
+		assertArrayEquals(expected, received.toArray(new Token[received.size()]));
+	}
 
 	@Test
 	public void testEmptyString() throws TokenizerException {
-		Tokenizer tokenizer = new Tokenizer("");
-		List<Token> tokens = tokenizer.tokenize();
-		assertEquals(0, tokens.size());
+		assertTokenizes("", new Token[0]);
 	}
 	
 	@Test
 	public void testOnlyWhitespace() throws TokenizerException {
-		Tokenizer tokenizer = new Tokenizer("     ");
-		List<Token> tokens = tokenizer.tokenize();
-		assertEquals(0, tokens.size());
+		assertTokenizes("     ", new Token[0]);
 	}
 	
 	@Test
 	public void testTrueByItself() throws TokenizerException {
-		Tokenizer tokenizer = new Tokenizer("true");
-		List<Token> tokens = tokenizer.tokenize();
-		assertEquals(1, tokens.size());
-		Token trueToken = tokens.get(0);
-		assertTrue(trueToken instanceof TrueToken);
+		assertTokenizes("true", new Token[] { new TrueToken()});
+	}
+	
+	@Test
+	public void testTrueSpaceTrueIsTrueToken() throws TokenizerException {
+		assertTokenizes("true true", new Token[] { new TrueToken(), new TrueToken()});
 	}
 	
 	@Test
 	public void testFalseByItself() throws TokenizerException {
-		Tokenizer tokenizer = new Tokenizer("false");
-		List<Token> tokens = tokenizer.tokenize();
-		assertEquals(1, tokens.size());
-		Token falseToken = tokens.get(0);
-		assertTrue(falseToken instanceof FalseToken);
+		assertTokenizes("false", new Token[] { new FalseToken()});
 	}
 	
 	@Test
 	public void testIfByItself() throws TokenizerException {
-		Tokenizer tokenizer = new Tokenizer("if");
-		List<Token> tokens = tokenizer.tokenize();
-		assertEquals(1, tokens.size());
-		Token ifToken = tokens.get(0);
-		assertTrue(ifToken instanceof IfToken);
+		assertTokenizes("if", new Token[] { new IfToken()});
 	}
 	
 	@Test
 	public void testElseByItself() throws TokenizerException {
-		Tokenizer tokenizer = new Tokenizer("else");
-		List<Token> tokens = tokenizer.tokenize();
-		assertEquals(1, tokens.size());
-		Token elseToken = tokens.get(0);
-		assertTrue(elseToken instanceof ElseToken);
+		assertTokenizes("else", new Token[] { new ElseToken()});
 	}
 	
 	@Test
 	public void testBreakByItself() throws TokenizerException {
-		Tokenizer tokenizer = new Tokenizer("break");
-		List<Token> tokens = tokenizer.tokenize();
-		assertEquals(1, tokens.size());
-		Token breakToken = tokens.get(0);
-		assertTrue(breakToken instanceof BreakToken);
+		assertTokenizes("break", new Token[] { new BreakToken()});
 	}
 	
 	@Test
 	public void testReturnByItself() throws TokenizerException {
-		Tokenizer tokenizer = new Tokenizer("return");
-		List<Token> tokens = tokenizer.tokenize();
-		assertEquals(1, tokens.size());
-		Token returnToken = tokens.get(0);
-		assertTrue(returnToken instanceof ReturnToken);
+		assertTokenizes("return", new Token[] { new ReturnToken()});
 	}
 	
 	@Test
 	public void testWhileByItself() throws TokenizerException {
-		Tokenizer tokenizer = new Tokenizer("while");
-		List<Token> tokens = tokenizer.tokenize();
-		assertEquals(1, tokens.size());
-		Token whileToken = tokens.get(0);
-		assertTrue(whileToken instanceof WhileToken);
+		assertTokenizes("while", new Token[] { new WhileToken()});
 	}
 	
 	@Test
 	public void testPrintByItself() throws TokenizerException {
-		Tokenizer tokenizer = new Tokenizer("print");
-		List<Token> tokens = tokenizer.tokenize();
-		assertEquals(1, tokens.size());
-		Token printToken = tokens.get(0);
-		assertTrue(printToken instanceof PrintToken);
+		assertTokenizes("print", new Token[] { new PrintToken()});
 	}
 	
 	@Test
 	public void testIntByItself() throws TokenizerException {
-		Tokenizer tokenizer = new Tokenizer("Int");
-		List<Token> tokens = tokenizer.tokenize();
-		assertEquals(1, tokens.size());
-		Token intToken = tokens.get(0);
-		assertTrue(intToken instanceof IntegerToken);
+		assertTokenizes("Int", new Token[] { new IntegerToken()});
 	}
 	
 	@Test
 	public void testStringByItself() throws TokenizerException {
-		Tokenizer tokenizer = new Tokenizer("String");
-		List<Token> tokens = tokenizer.tokenize();
-		assertEquals(1, tokens.size());
-		Token stringToken = tokens.get(0);
-		assertTrue(stringToken instanceof StringToken);
+		assertTokenizes("String", new Token[] { new StringToken()});
 	}
 	
 	@Test
 	public void testBooleanByItself() throws TokenizerException {
-		Tokenizer tokenizer = new Tokenizer("Boolean");
-		List<Token> tokens = tokenizer.tokenize();
-		assertEquals(1, tokens.size());
-		Token booleanToken = tokens.get(0);
-		assertTrue(booleanToken instanceof BooleanToken);
+		assertTokenizes("Boolean", new Token[] { new BooleanToken()});
+	}
+	
+	@Test(expected = TokenizerException.class)
+	public void testInvalid() throws TokenizerException {
+		assertTokenizes("$", null);
 	}
 	
 	/*@Test
-	public void test() {
-		fail("Not yet implemented");
-	}
-	
-	@Test
 	public void test() {
 		fail("Not yet implemented");
 	}
