@@ -93,13 +93,13 @@ public class TokenizerTest {
 	
 	@Test
 	public void testSingleDigitInteger() throws TokenizerException {
-		assertTokenizes("1", new Token[] { new IntegerToken(1) });
+		assertTokenizes("1", new Token[] { new IntegerVariable(1) });
 	}
 	
 	
 	@Test
 	public void testMultiDigitInteger() throws TokenizerException {
-		assertTokenizes("123", new Token[] { new IntegerToken(123) });
+		assertTokenizes("123", new Token[] { new IntegerVariable(123) });
 	}
 	
 	@Test
