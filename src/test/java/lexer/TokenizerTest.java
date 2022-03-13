@@ -91,22 +91,63 @@ public class TokenizerTest {
 		assertTokenizes("$", null);
 	}
 	
+	@Test
+	public void testSingleDigitInteger() throws TokenizerException {
+		assertTokenizes("1", new Token[] { new IntegerToken(1) });
+	}
+	
+	
+	@Test
+	public void testMultiDigitInteger() throws TokenizerException {
+		assertTokenizes("123", new Token[] { new IntegerToken(123) });
+	}
+	
+	@Test
+	public void testLeftParen() throws TokenizerException {
+		assertTokenizes("(", new Token[] { new LeftParenToken() });
+	}
+	
+	@Test
+	public void testRightParen() throws TokenizerException {
+		assertTokenizes(")", new Token[] { new RightParenToken() });
+	}
+	
+	@Test
+	public void testLeftCurly() throws TokenizerException {
+		assertTokenizes("{", new Token[] { new LeftCurlyToken() });
+	}
+	
+	@Test
+	public void testRightCurly() throws TokenizerException {
+		assertTokenizes("}", new Token[] { new RightCurlyToken() });
+	}
+	
+	@Test
+	public void testAdd() throws TokenizerException {
+		assertTokenizes("+", new Token[] { new AddToken() });
+	}
+	
+	@Test
+	public void testMinus() throws TokenizerException {
+		assertTokenizes("-", new Token[] { new MinusToken() });
+	}
+	
+	@Test
+	public void testMultiplication() throws TokenizerException {
+		assertTokenizes("*", new Token[] { new MultiplicationToken() });
+	}
+	
+	@Test
+	public void testDivide() throws TokenizerException {
+		assertTokenizes("/", new Token[] { new DivideToken() });
+	}
+	
+	@Test
+	public void testSemicolon() throws TokenizerException {
+		assertTokenizes(";", new Token[] { new SemicolonToken() });
+	}
+	
 	/*@Test
-	public void test() {
-		fail("Not yet implemented");
-	}
-	
-	@Test
-	public void test() {
-		fail("Not yet implemented");
-	}
-	
-	@Test
-	public void test() {
-		fail("Not yet implemented");
-	}
-	
-	@Test
 	public void test() {
 		fail("Not yet implemented");
 	}
