@@ -159,7 +159,7 @@ public class TokenizerTest {
 	
 	@Test
 	public void testEqualsTo() throws TokenizerException{
-		assertTokenizes("==", new Token[] { new EqualsTo()} );
+		assertTokenizes("==", new Token[] { new EqualsToToken()} );
 	}
 	/*@Test
 	public void test() {
