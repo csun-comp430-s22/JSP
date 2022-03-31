@@ -4,3 +4,4 @@ src/main/java/lexer/.gitignore
 .classpath
 .project
 src/main/java/lexer/.metadata/
+/target/
