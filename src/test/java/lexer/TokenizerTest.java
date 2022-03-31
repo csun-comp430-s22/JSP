@@ -147,6 +147,20 @@ public class TokenizerTest {
 		assertTokenizes(";", new Token[] { new SemicolonToken() });
 	}
 	
+	@Test
+	public void testGreaterThan() throws TokenizerException{
+		assertTokenizes(">", new Token[] { new GreaterThanToken()});
+	}
+	
+	@Test
+	public void testLessThan() throws TokenizerException{
+		assertTokenizes("<", new Token[] { new LessThanToken()} );
+	}
+	
+	@Test
+	public void testEqualsTo() throws TokenizerException{
+		assertTokenizes("==", new Token[] { new EqualsTo()} );
+	}
 	/*@Test
 	public void test() {
 		fail("Not yet implemented");
