@@ -1,8 +1,8 @@
 package lexer;
 
-public class EqualToToken implements Token{
+public class EqualsToToken implements Token{
 	public boolean equals(final Object tokens){
-		return tokens instanceof EqualToToken;
+		return tokens instanceof EqualsToToken;
 	}
 	
 	public int hashCode(){

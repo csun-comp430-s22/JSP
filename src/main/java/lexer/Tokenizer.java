@@ -130,7 +130,7 @@ public class Tokenizer {
         	val = new LessThanToken();
         } else if (input.startsWith("==", offset)) {
         	offset += 2;
-        	val = new EqualToToken();
+        	val = new EqualsToToken();
         }
 
         return val;
