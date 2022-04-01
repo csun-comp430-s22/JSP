@@ -122,6 +122,15 @@ public class Tokenizer {
         } else if (input.startsWith(";", offset)) {
         	offset += 1;
         	val = new SemicolonToken();
+        } else if (input.startsWith(">", offset)) {
+        	offset += 1;
+        	val = new GreaterThanToken();
+        } else if (input.startsWith("<", offset)) {
+        	offset += 1;
+        	val = new LessThanToken();
+        } else if (input.startsWith("==", offset)) {
+        	offset += 2;
+        	val = new EqualToToken();
         }
 
         return val;
