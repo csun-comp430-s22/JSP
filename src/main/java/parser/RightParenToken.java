@@ -1,16 +1,16 @@
 package parser;
 
-public class DivisionToken implements Token{
+public class RightParenToken implements Token{
 	public boolean equals(final Object other) {
-		return other instanceof DivisionToken;
+		return other instanceof RightParenToken;
 	}
 	
 	public int hashCode() {
-		return 1;
+		return 10;
 	}
 	
 	public String toString() {
-		return "DivisionToken";
+		return "RightParenToken";
 	}
 
 }

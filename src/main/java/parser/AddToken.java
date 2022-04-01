@@ -1,6 +1,6 @@
 package parser;
 
-public class AddToken {
+public class AddToken implements Token{
 	public boolean equals(final Object other) {
 		return other instanceof AddToken;
 	}

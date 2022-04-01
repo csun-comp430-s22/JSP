@@ -1,16 +1,16 @@
 package parser;
 
-public class DivisionToken implements Token{
+public class SemiColonToken implements Token{
 	public boolean equals(final Object other) {
-		return other instanceof DivisionToken;
+		return other instanceof SemiColonToken;
 	}
 	
 	public int hashCode() {
-		return 1;
+		return 11;
 	}
 	
 	public String toString() {
-		return "DivisionToken";
+		return "SemiColonToken";
 	}
 
 }
