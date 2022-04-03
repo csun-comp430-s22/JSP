@@ -54,6 +54,21 @@ public class Parser {
     }
     
     //multiplicative op for * | /
+    public ParseResult<Op> parseMultiplicativeOp(final int position) throws ParseException{
+    	final Token token = getToken(position);
+    	
+    	if(token instanceof MultiplicationOp) {
+    		
+    		return new ParseResult<Op>(new MultiplicationOp(), position + 1);
+    	
+    	}else if(token instanceof DivisionOp) {
+    		
+    		return new ParseResult<Op>(new DivisionOp(), position + 1);
+    	
+    	} else {
+    		throw new ParseException("expected * or /; recieved: " + token);
+    	}
+    }
     
     //parses an expression that contains a * or / operation (example: 3 * 2, or 6 / 3
     public ParseResult<Exp> parseMultiplicativeExp(final int position) throws ParseException {
