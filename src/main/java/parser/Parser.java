@@ -132,7 +132,23 @@ public class Parser {
     }
    
     //comparison op for < | >
-    
+    public ParseResult<Op> parseComparisonOp(final int position) throws ParseException{
+    	final Token token = getToken(position);
+    	
+    	if(token instanceof GreaterThanToken) {
+    		
+    		return new ParseResult<Op>(new GreaterThanOp(), position + 1);
+    	
+    	}else if(token instanceof LessThanToken) {
+    		
+    		return new ParseResult<Op>(new LessThanOp(), position + 1);
+    	
+    	}else {
+    		
+    		throw new ParseException("expected > or <; received: " + token);
+    		
+    	}
+    }
     
     //parses an expression that contains a < or > operation (example: x < 2, or 3 > 1)
     public ParseResult<Exp> parseComparisonExp(final int position) throws ParseException {
@@ -156,7 +172,19 @@ public class Parser {
     }
     
     //equals op for ==
-    
+    public ParseResult<Op> parseEqualsOp(final int position) throws ParseException{
+    	final Token token = getToken(position);
+    	
+    	if(token instanceof EqualToToken) {
+    		
+    		return new ParseResult<Op>(new EqualToOp(), position + 1);
+    	
+    	}else {
+    		
+    		throw new ParseException("expected ==; recieved: " + token);
+    	}
+    }
+	
     //parses an expression that contains a == operation (example: a == b )
     public ParseResult<Exp> parseEqualsExp(final int position) throws ParseException {
     	ParseResult<Exp> current = parseComparisonExp(position);
