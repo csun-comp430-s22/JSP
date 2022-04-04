@@ -40,7 +40,7 @@ public class Tokenizer {
     }
     
     // returns null if no variable or keyword
-    public Token tryTokenizeVariableOrKeyword() {
+    public Token tryTokenizeIdentifierOrKeyword() {
         skipWhitespace();
         
         String name = "";
@@ -83,7 +83,7 @@ public class Tokenizer {
             } else if(name.equals("Boolean")) {
             	return new BooleanToken();
             } else {
-                return new VariableToken(name);
+                return new IdentifierToken(name);
             }
         } else {
             return null;
@@ -141,7 +141,7 @@ public class Tokenizer {
         Token retval = null;
         skipWhitespace();
         if (offset < input.length() &&
-            (retval = tryTokenizeVariableOrKeyword()) == null &&
+            (retval = tryTokenizeIdentifierOrKeyword()) == null &&
             (retval = tryTokenizeInteger()) == null &&
             (retval = tryTokenizeSymbol()) == null) {
             throw new TokenizerException();
