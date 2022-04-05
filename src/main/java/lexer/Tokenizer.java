@@ -89,6 +89,43 @@ public class Tokenizer {
             return null;
         }
     }
+    
+    public Token tryTokenizeAddressOrPointer() {
+        skipWhitespace();
+        
+        String name = "";
+
+        //read characters individually
+        //first variable char is a & or *
+        //followed by letter
+        //followed by letter or integer
+        if (offset < input.length() &&
+            (input.charAt(offset) == '&') || (input.charAt(offset) == '*')) {
+            name += input.charAt(offset);
+            offset++;
+            
+            if(offset < input.length() &&
+            	Character.isLetter(input.charAt(offset))) {
+            	name += input.charAt(offset);
+            	offset++;
+            }
+
+            while (offset < input.length() &&
+                   Character.isLetterOrDigit(input.charAt(offset))) {
+                name += input.charAt(offset);
+                offset++;
+            }
+
+            //name holds potential variable
+            if ((name.startsWith("&"))&& name.length() > 1) {
+                return new AddressToken(name);
+            } else {
+                return new PointerToken(name);
+            }
+        } else {
+            return null;
+        }
+    }
 
     // returns null if it couldn't read in a symbol
     public Token tryTokenizeSymbol() {
@@ -145,6 +182,7 @@ public class Tokenizer {
         skipWhitespace();
         if (offset < input.length() &&
             (retval = tryTokenizeIdentifierOrKeyword()) == null &&
+            (retval = tryTokenizeAddressOrPointer()) == null &&
             (retval = tryTokenizeInteger()) == null &&
             (retval = tryTokenizeSymbol()) == null) {
             throw new TokenizerException();
