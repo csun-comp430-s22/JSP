@@ -131,6 +131,9 @@ public class Tokenizer {
         } else if (input.startsWith("==", offset)) {
         	offset += 2;
         	val = new EqualsToToken();
+        } else if (input.startsWith(".", offset)) {
+        	offset += 1;
+        	val = new PeriodToken();
         }
 
         return val;

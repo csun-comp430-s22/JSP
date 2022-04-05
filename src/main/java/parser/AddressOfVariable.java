@@ -14,7 +14,7 @@ public class AddressOfVariable implements Exp{
 	}
 	
 	public boolean equals(final Object other) {
-		return(other instanceof AddressOfVariable && variable.equals(((AddressOfVariable)other).name));
+		return(other instanceof AddressOfVariable && variable.equals(((AddressOfVariable)other).variable));
 	}
 	
 	public String toString() {

@@ -161,12 +161,13 @@ public class TokenizerTest {
 	public void testEqualsTo() throws TokenizerException{
 		assertTokenizes("==", new Token[] { new EqualsToToken()} );
 	}
-	/*@Test
-	public void test() {
-		fail("Not yet implemented");
-	}
 	
 	@Test
+	public void testPeriod() throws TokenizerException {
+		assertTokenizes(".", new Token[] { new PeriodToken() });
+	}
+	
+	/*@Test
 	public void test() {
 		fail("Not yet implemented");
 	}

@@ -16,7 +16,7 @@ public class VariableExp implements Exp{
 	}
 	
 	public String toString() {
-		return "VariableExp(" + var + ")";
+		return "VariableExp(" + var.toString() + ")";
 	}
 
 }

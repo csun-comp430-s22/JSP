@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.ArrayList;
 
 public class Parser {
-	private final List<Token> tokens;
+    private final List<Token> tokens;
 
     public Parser(final List<Token> tokens) {
     	
@@ -40,8 +40,11 @@ public class Parser {
     	final Token token = getToken(position);
     	if(token instanceof VariableToken) {
     		final String name = ((VariableToken)token).name;
-    		return new ParseResult<Exp>(new VariableExp(name), position + 1);
-    	} else if(token instanceof IntegerToken) {
+    		return new ParseResult<Exp>(new VariableExp(new Var(name)), position + 1);
+    	} else if(token instanceof FunctionNameToken) {
+    		final String name = ((FunctionNameToken)token).name;
+    		return new ParseResult<Exp>(new FunctionNameExp(new FunctionName(name)), position + 1);
+    	}else if(token instanceof IntegerToken) {
     		final int value = ((IntegerToken)token).value;
     		return new ParseResult<Exp>(new IntegerExp(value), position + 1);
     	} else if(token instanceof LeftParenToken) {
@@ -51,6 +54,40 @@ public class Parser {
     	} else {
     		throw new ParseException("expected primaryExp; received: " + token);
     	}
+    }
+    
+    //dot op for .
+    public ParseResult<Op> parseDotOp(final int position) throws ParseException{
+    	final Token token = getToken(position);
+    	
+    	if(token instanceof DotOp) {
+    		
+    		return new ParseResult<Op>(new DotOp(), position + 1);
+    	
+    	}else {
+    		throw new ParseException("expected .; recieved: " + token);
+    	}
+    }
+    
+    //parses an expression that contains a . (example: x.a where x and a are both variables)
+    public ParseResult<Exp> parseDotExp(final int position) throws ParseException {
+    	ParseResult<Exp> current = parsePrimaryExp(position);
+    	boolean shouldRun = true;
+    	
+    	while(shouldRun) {
+    		try {
+    			final ParseResult<Op> dotOp = parseDotOp(current.position);
+    			final ParseResult<Exp> anotherPrimary = parsePrimaryExp(dotOp.position);
+    			current = new ParseResult<Exp>(new OpExp(current.result,
+    													dotOp.result,
+    													anotherPrimary.result),
+    											anotherPrimary.position);
+    		} catch(final ParseException e) {
+    			shouldRun = false;
+    		}
+    	}
+    	
+    	return current;
     }
     
     //multiplicative op for * | /
@@ -72,17 +109,17 @@ public class Parser {
     
     //parses an expression that contains a * or / operation (example: 3 * 2, or 6 / 3
     public ParseResult<Exp> parseMultiplicativeExp(final int position) throws ParseException {
-    	ParseResult<Exp> current = parsePrimaryExp(position);
+    	ParseResult<Exp> current = parseDotExp(position);
     	boolean shouldRun = true;
     	
     	while(shouldRun) {
     		try {
     			final ParseResult<Op> multiplicativeOp = parseMultiplicativeOp(current.position);
-    			final ParseResult<Exp> anotherPrimary = parsePrimaryExp(multiplicativeOp.position);
+    			final ParseResult<Exp> anotherDot = parseDotExp(multiplicativeOp.position);
     			current = new ParseResult<Exp>(new OpExp(current.result,
     													multiplicativeOp.result,
-    													anotherPrimary.result),
-    											anotherPrimary.position);
+    													anotherDot.result),
+    											anotherDot.position);
     		} catch(final ParseException e) {
     			shouldRun = false;
     		}
@@ -150,6 +187,7 @@ public class Parser {
     	}
     }
     
+    
     //parses an expression that contains a < or > operation (example: x < 2, or 3 > 1)
     public ParseResult<Exp> parseComparisonExp(final int position) throws ParseException {
     	ParseResult<Exp> current = parseAdditiveExp(position);
@@ -184,7 +222,7 @@ public class Parser {
     		throw new ParseException("expected ==; recieved: " + token);
     	}
     }
-	
+    
     //parses an expression that contains a == operation (example: a == b )
     public ParseResult<Exp> parseEqualsExp(final int position) throws ParseException {
     	ParseResult<Exp> current = parseComparisonExp(position);
@@ -229,8 +267,7 @@ public class Parser {
     	} else if(token instanceof AddressFuncNameToken) {
     		
     	} else {
-    		ParseResult<Exp> current = parseEqualsExp(position);
-        	return current;
+        	return parseEqualsExp(position);
     	}
     }
    
