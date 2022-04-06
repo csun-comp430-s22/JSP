@@ -167,12 +167,12 @@ public class TokenizerTest {
 		assertTokenizes(".", new Token[] { new PeriodToken() });
 	}
 	
-	/*@Test
-	public void test() {
-		fail("Not yet implemented");
+	@Test
+	public void testComma() throws TokenizerException {
+		assertTokenizes(",", new Token[] { new CommaToken() });
 	}
 	
-	@Test
+	/*@Test
 	public void test() {
 		fail("Not yet implemented");
 	}
