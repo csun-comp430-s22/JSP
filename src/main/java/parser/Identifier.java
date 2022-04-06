@@ -1,9 +1,9 @@
 package parser;
 
-public class Var{
+public class Identifier{
 	public final String name;
 	
-	public Var(final String name) {
+	public Identifier(final String name) {
 		this.name = name;
 	}
 	
@@ -12,10 +12,10 @@ public class Var{
 	}
 	
 	public boolean equals(final Object other) {
-		return(other instanceof Var && name.equals(((Var)other).name));
+		return(other instanceof Identifier && name.equals(((Identifier)other).name));
 	}
 	
 	public String toString() {
-		return "Var(" + name + ")";
+		return "Ident(" + name + ")";
 	}
 } 

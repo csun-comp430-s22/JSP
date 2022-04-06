@@ -117,7 +117,7 @@ public class Tokenizer {
             }
 
             //name holds potential variable
-            if ((name.startsWith("&"))&& name.length() > 1) {
+            if (name.startsWith("&")) {
                 return new AddressToken(name);
             } else {
                 return new PointerToken(name);

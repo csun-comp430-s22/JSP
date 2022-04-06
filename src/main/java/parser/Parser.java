@@ -38,13 +38,16 @@ public class Parser {
     //parses variable, integer, or (exp)
     public ParseResult<Exp> parsePrimaryExp(final int position) throws ParseException {
     	final Token token = getToken(position);
-    	if(token instanceof VariableToken) {
+    	if(token instanceof IdentifierToken) {
+    		final String name = ((IdentifierToken)token).name;
+    		return new ParseResult<Exp>(new IdentifierExp(new Identifier(name)), position + 1);
+    	/*if(token instanceof VariableToken) {
     		final String name = ((VariableToken)token).name;
-    		return new ParseResult<Exp>(new VariableExp(new Var(name)), position + 1);
-    	} else if(token instanceof FunctionNameToken) {
+    		return new ParseResult<Exp>(new VariableExp(new Var(name)), position + 1);*/
+    	} /*else if(token instanceof FunctionNameToken) {
     		final String name = ((FunctionNameToken)token).name;
     		return new ParseResult<Exp>(new FunctionNameExp(new FunctionName(name)), position + 1);
-    	}else if(token instanceof IntegerToken) {
+    	}*/else if(token instanceof IntegerToken) {
     		final int value = ((IntegerToken)token).value;
     		return new ParseResult<Exp>(new IntegerExp(value), position + 1);
     	} else if(token instanceof LeftParenToken) {
@@ -245,35 +248,35 @@ public class Parser {
     }
     
     //parses a generic expression
-    /*public ParseResult<Exp> parseExp(final int position) throws ParseException {
+    public ParseResult<Exp> parseExp(final int position) throws ParseException {
     	final Token token = getToken(position);
-    	if(token instanceof VariableToken) {
-    		assertTokenHereIs(position + 1, new LeftParenToken());
-    		boolean shouldRun = true;
-    		while(shouldRun) {
-        		try {
-        			final ParseResult<Exp> anotherExp = parseMultiplicativeOp(current.position);
-        			current = new ParseResult<Exp>(new OpExp(current.result,
-        													multiplicativeOp.result,
-        													anotherPrimary.result),
-        											anotherPrimary.position);
-        		} catch(final ParseException e) {
-        			shouldRun = false;
-        		}
-        	}
-    		
-    	} else if(token instanceof AddressVarToken) {
-    		
-    	} else if(token instanceof AddressFuncNameToken) {
-    		
+    	if(token instanceof AddressIdentToken) {
+    		final String addressName = ((AddressIdentToken)token).name;
+    		return new ParseResult<Exp>(new AddressIdentExp(new Identifier(addressName)), position + 1);
+    	} else if(token instanceof PointerIdentToken) {
+    		final String pointerName = ((PointerIdentToken)token).name;
+    		return new ParseResult<Exp>(new PointerIdentExp(new Identifier(pointerName)), position + 1);
+    	} else if(token instanceof IdentifierToken) {
+    		final String name = ((IdentifierToken)token).name;
+    		token = getToken(position + 1);
+    		if(token instanceof LeftParenToken) {    //try to read an expression, initially if it cant read an expression done looping there are no expressions, if it reads an expression check if there is a comma if no comma then the  loop is done, if there is a comma  loop again because there is another expression,
+    			final List<Exp> expressionList = new ArrayList<Exp>();
+    			Exp params = parseEqualsExp(position);
+    			boolean shouldRun = true;
+    			while(shouldRun) {
+    				try {
+    					final ParseResult<Exp> expressionsToCall = new CallExp(new Identifier(name), new List<Exp> expressionList, position + 1);
+    				} catch(final ParseException e) {
+    					shouldRun = false;
+    				}
+    			}
+    			return new ParseResult<Exp>(new CallExp(new Identifier(name), new expressionList()), position + 1);
+    		} else {
+    			token = getToken(position - 1);
+    		} 
     	} else {
         	return parseEqualsExp(position);
     	}
-    }*/
-    
-    //Temporary parseExp in order to make tests
-    public ParseResult<Exp> parseExp(final int position) throws ParseException {
-        return parseEqualsExp(position);
     }
    
     //parse stmt
