@@ -1,6 +1,6 @@
 package parser;
 
-public class AddressIdentToken implements Token {
+public class AddressToken implements Token {
 	public final String name;
 	
 	public AddressIdentToken(final String name) {
@@ -8,7 +8,7 @@ public class AddressIdentToken implements Token {
 	}
 	
 	public boolean equals(final Object other) {
-		return(other instanceof AddressIdentToken && name.equals(((AddressIdentToken)other).name));
+		return(other instanceof AddressToken && name.equals(((AddressToken)other).name));
 	}
 	
 	public int hashCode() {

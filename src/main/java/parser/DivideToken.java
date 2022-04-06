@@ -1,16 +1,16 @@
 package parser;
 
-public class EqualToToken implements Token{
+public class DivideToken implements Token{
 	public boolean equals(final Object other) {
-		return other instanceof EqualToToken;
+		return other instanceof DivideToken;
 	}
 	
 	public int hashCode() {
-		return 6;
+		return 1;
 	}
 	
 	public String toString() {
-		return "EqualToToken";
+		return "DivideToken";
 	}
 
 }

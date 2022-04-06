@@ -1,14 +1,14 @@
 package parser;
 
-public class PointerIdentToken implements Token {
+public class PointerToken implements Token {
 	public final String name;
 	
-	public PointerIdentToken(final String name) {
+	public PointerToken(final String name) {
 		this.name = name;
 	}
 	
 	public boolean equals(final Object other) {
-		return(other instanceof PointerIdentToken && name.equals(((PointerIdentToken)other).name));
+		return(other instanceof PointerToken && name.equals(((PointerToken)other).name));
 	}
 	
 	public int hashCode() {
