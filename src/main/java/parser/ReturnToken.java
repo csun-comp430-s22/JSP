@@ -6,11 +6,10 @@ public class ReturnToken implements Token{
 	}
 	
 	public int hashCode() {
-		return 16;
+		return 17;
 	}
 	
 	public String toString() {
 		return "ReturnToken";
 	}
-
 }

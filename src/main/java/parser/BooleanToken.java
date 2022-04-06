@@ -1,15 +1,15 @@
 package parser;
 
-public class PrintToken implements Token {
+public class BooleanToken implements Token {
 	public boolean equals(final Object other) {
-		return other instanceof PrintToken;
+		return other instanceof BooleanToken;
 	}
 	
 	public int hashCode() {
-		return 18;
+		return 19;
 	}
 	
 	public String toString() {
-		return "PrintToken";
+		return "BooleanToken";
 	}
 }
