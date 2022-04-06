@@ -1,22 +1,22 @@
 package parser;
 
-public class VariableExp implements Exp{
-	public final Var var;
-	
-	public VariableExp(final Var var) {
-		this.var = var;
-	}
-	
-	public boolean equals(final Object other) {
-		return(other instanceof VariableExp && var.equals(((VariableExp)other).var));
-	}
-	
-	public int hashCode() {
-		return var.hashCode();
-	}
-	
-	public String toString() {
-		return "VariableExp(" + var.toString() + ")";
-	}
+public class VariableExp implements Exp {
+    public final Variable variable;
 
+    public VariableExp(final Variable variable) {
+        this.variable = variable;
+    }
+
+    public boolean equals(final Object other) {
+        return (other instanceof VariableExp &&
+                variable.equals(((VariableExp)other).variable));
+    }
+
+    public int hashCode() {
+        return variable.hashCode();
+    }
+
+    public String toString() {
+        return "VariableExp(" + variable.toString() + ")";
+    }
 }

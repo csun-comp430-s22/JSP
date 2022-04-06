@@ -245,7 +245,7 @@ public class Parser {
     }
     
     //parses a generic expression
-    public ParseResult<Exp> parseExp(final int position) throws ParseException {
+    /*public ParseResult<Exp> parseExp(final int position) throws ParseException {
     	final Token token = getToken(position);
     	if(token instanceof VariableToken) {
     		assertTokenHereIs(position + 1, new LeftParenToken());
@@ -269,6 +269,11 @@ public class Parser {
     	} else {
         	return parseEqualsExp(position);
     	}
+    }*/
+    
+    //Temporary parseExp in order to make tests
+    public ParseResult<Exp> parseExp(final int position) throws ParseException {
+        return parseEqualsExp(position);
     }
    
     //parse stmt
@@ -301,12 +306,12 @@ public class Parser {
             }
             return new ParseResult<Stmt>(new BlockStmt(stmts),
                                          curPosition);
-        } else if (token instanceof PrintlnToken) {
+        } else if (token instanceof PrintToken) {
             assertTokenHereIs(position + 1, new LeftParenToken());
             final ParseResult<Exp> exp = parseExp(position + 2);
             assertTokenHereIs(exp.position, new RightParenToken());
-            assertTokenHereIs(exp.position + 1, new SemicolonToken());
-            return new ParseResult<Stmt>(new PrintlnStmt(exp.result),
+            assertTokenHereIs(exp.position + 1, new SemiColonToken());
+            return new ParseResult<Stmt>(new PrintStmt(exp.result),
                                          exp.position + 2);
         } else {
             throw new ParseException("expected statement; received: " + token);

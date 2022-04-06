@@ -16,6 +16,6 @@ public class PrintStmt implements Stmt{
 	}
 	
 	public String toString() {
-		return "Print(" + exp.toString() + ")";
+		return "Print" + exp.toString() + ")";
 	}
 }
