@@ -216,7 +216,7 @@ public class Parser {
     public ParseResult<Op> parseEqualsOp(final int position) throws ParseException{
     	final Token token = getToken(position);
     	
-    	if(token instanceof EqualToToken) {
+    	if(token instanceof EqualsToToken) {
     		
     		return new ParseResult<Op>(new EqualToOp(), position + 1);
     	
