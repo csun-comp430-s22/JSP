@@ -280,10 +280,12 @@ public class Parser {
     }
    
     //parse stmt
+	//stmt ::= if (exp) stmt else stmt | { stmt* } | print(exp);
+	//break; | return; 
 	public ParseResult<Stmt> parseStmt(final int position) throws ParseException {
         final Token token = getToken(position);
 		
-        if (token instanceof IfToken) {
+        if (token instanceof IfToken) {  //if (exp) stmt else stmt
             assertTokenHereIs(position + 1, new LeftParenToken());
             final ParseResult<Exp> guard = parseExp(position + 2);
             assertTokenHereIs(guard.position, new RightParenToken());
@@ -294,7 +296,8 @@ public class Parser {
                                                     trueBranch.result,
                                                     falseBranch.result),
                                          falseBranch.position);
-        } else if (token instanceof LeftCurlyToken) {
+										 
+        } else if (token instanceof LeftCurlyToken) {  //{ stmt* }
             final List<Stmt> stmts = new ArrayList<Stmt>();
             int curPosition = position + 1;
             boolean shouldRun = true;
@@ -309,14 +312,26 @@ public class Parser {
             }
             return new ParseResult<Stmt>(new BlockStmt(stmts),
                                          curPosition);
-        } else if (token instanceof PrintToken) {
+										 
+        } else if (token instanceof PrintToken) {  //print(exp);
             assertTokenHereIs(position + 1, new LeftParenToken());
             final ParseResult<Exp> exp = parseExp(position + 2);
             assertTokenHereIs(exp.position, new RightParenToken());
             assertTokenHereIs(exp.position + 1, new SemiColonToken());
             return new ParseResult<Stmt>(new PrintStmt(exp.result),
                                          exp.position + 2);
-        } else {
+										 
+        } else if (token instanceof BreakToken) { //break;
+			assertTokenHereIs(position + 1, new SemiColonToken());
+			return new ParseResult<Stmt>(new BreakStmt(), position);
+		
+		} else if (token instanceof ReturnToken) { //return;
+			assertTokenHereIs(position + 1, new SemiColonToken());
+			return new ParseResult<Stmt>(new ReturnStmt(), position);
+		
+		} 
+		
+		else {
             throw new ParseException("expected statement; received: " + token);
         }
     }
