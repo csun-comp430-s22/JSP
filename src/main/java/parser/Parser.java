@@ -58,7 +58,7 @@ public class Parser {
     public ParseResult<Op> parseDotOp(final int position) throws ParseException{
     	final Token token = getToken(position);
     	
-    	if(token instanceof DotOp) {
+    	if(token instanceof PeriodToken) {
     		
     		return new ParseResult<Op>(new DotOp(), position + 1);
     	
@@ -92,11 +92,11 @@ public class Parser {
     public ParseResult<Op> parseMultiplicativeOp(final int position) throws ParseException{
     	final Token token = getToken(position);
     	
-    	if(token instanceof MultiplicationOp) {
+    	if(token instanceof MultiplicationToken) {
     		
     		return new ParseResult<Op>(new MultiplicationOp(), position + 1);
     	
-    	}else if(token instanceof DivisionOp) {
+    	}else if(token instanceof DivideToken) {
     		
     		return new ParseResult<Op>(new DivisionOp(), position + 1);
     	
@@ -251,14 +251,12 @@ public class Parser {
     	} else {
     		ParseResult<Exp> parameter = parseExp(position);
     		final Token checkCommaToken = getToken(parameter.position);
-    		//Exp param = (Exp) parameter;
 			paramsList.add(parameter);
 			if(checkCommaToken instanceof CommaToken) {
 				boolean shouldRun = true;
 	        	while(shouldRun) {
 	        		try {
 	        			parameter = parseExp(parameter.position + 1);
-	        			//param = (Exp) parameter;
 	        			paramsList.add(parameter);
 	        		} catch(final ParseException e) {
 	        			shouldRun = false;
