@@ -25,6 +25,7 @@ public class Parser {
         }
         
     }
+    
     public void assertTokenHereIs(final int position, final Token expected) throws ParseException {
         final Token received = getToken(position);
         
@@ -247,45 +248,68 @@ public class Parser {
     	return current;
     }
     
+    //returns a parameter list to fill the parenthesis of a call expression
+    public List<ParseResult> getParams(final int position) throws ParseException {
+    	final List<ParseResult> paramsList = new ArrayList<ParseResult>();
+    	final Token token = getToken(position);
+    	if(token instanceof RightParenToken) {
+    		return null;
+    	} else {
+    		ParseResult<Exp> parameter = parseExp(position);
+    		final Token checkCommaToken = getToken(parameter.position);
+    		//Exp param = (Exp) parameter;
+			paramsList.add(parameter);
+			if(checkCommaToken instanceof CommaToken) {
+				boolean shouldRun = true;
+	        	while(shouldRun) {
+	        		try {
+	        			parameter = parseExp(parameter.position + 1);
+	        			//param = (Exp) parameter;
+	        			paramsList.add(parameter);
+	        		} catch(final ParseException e) {
+	        			shouldRun = false;
+	        		}
+	        	}
+	        	
+	        	return paramsList;
+	        	
+			} else {
+				return paramsList;
+			}
+    	}
+    }
+    
     //parses a generic expression
     public ParseResult<Exp> parseExp(final int position) throws ParseException {
     	final Token token = getToken(position);
-    	if(token instanceof AddressIdentToken) {
-    		final String addressName = ((AddressIdentToken)token).name;
+    	final Token callToken = getToken(position + 1);
+    	if(token instanceof AddressToken) {
+    		final String addressName = ((AddressToken)token).name;
     		return new ParseResult<Exp>(new AddressIdentExp(new Identifier(addressName)), position + 1);
-    	} else if(token instanceof PointerIdentToken) {
-    		final String pointerName = ((PointerIdentToken)token).name;
+    	} else if(token instanceof PointerToken) {
+    		final String pointerName = ((PointerToken)token).name;
     		return new ParseResult<Exp>(new PointerIdentExp(new Identifier(pointerName)), position + 1);
     	} else if(token instanceof IdentifierToken) {
     		final String name = ((IdentifierToken)token).name;
-    		token = getToken(position + 1);
-    		if(token instanceof LeftParenToken) {    //try to read an expression, initially if it cant read an expression done looping there are no expressions, if it reads an expression check if there is a comma if no comma then the  loop is done, if there is a comma  loop again because there is another expression,
-    			final List<Exp> expressionList = new ArrayList<Exp>();
-    			Exp params = parseEqualsExp(position);
-    			boolean shouldRun = true;
-    			while(shouldRun) {
-    				try {
-    					final ParseResult<Exp> expressionsToCall = new CallExp(new Identifier(name), new List<Exp> expressionList, position + 1);
-    				} catch(final ParseException e) {
-    					shouldRun = false;
-    				}
-    			}
-    			return new ParseResult<Exp>(new CallExp(new Identifier(name), new expressionList()), position + 1);
+    		if(callToken instanceof LeftParenToken) {
+    			List<ParseResult> paramsList = getParams(position + 2);
+    			int lastParam = paramsList.lastIndexOf(paramsList);
+    			ParseResult<Exp> lastExp = paramsList.get(lastParam);
+    			assertTokenHereIs(lastExp.position, new RightParenToken());
+    		    return new ParseResult<Exp>(new CallExp(new IdentifierExp(new Identifier(name)), paramsList), lastExp.position + 1);
     		} else {
-    			token = getToken(position - 1);
-    		} 
+    			return parseEqualsExp(position);
+    		}
     	} else {
-        	return parseEqualsExp(position);
+    		throw new ParseException("expected expression; recieved: " + token);
     	}
     }
    
     //parse stmt
-	//stmt ::= if (exp) stmt else stmt | { stmt* } | print(exp);
-	//break; | return; 
 	public ParseResult<Stmt> parseStmt(final int position) throws ParseException {
         final Token token = getToken(position);
 		
-        if (token instanceof IfToken) {  //if (exp) stmt else stmt
+        if (token instanceof IfToken) {
             assertTokenHereIs(position + 1, new LeftParenToken());
             final ParseResult<Exp> guard = parseExp(position + 2);
             assertTokenHereIs(guard.position, new RightParenToken());
@@ -296,8 +320,7 @@ public class Parser {
                                                     trueBranch.result,
                                                     falseBranch.result),
                                          falseBranch.position);
-										 
-        } else if (token instanceof LeftCurlyToken) {  //{ stmt* }
+        } else if (token instanceof LeftCurlyToken) {
             final List<Stmt> stmts = new ArrayList<Stmt>();
             int curPosition = position + 1;
             boolean shouldRun = true;
@@ -312,15 +335,15 @@ public class Parser {
             }
             return new ParseResult<Stmt>(new BlockStmt(stmts),
                                          curPosition);
-										 
-        } else if (token instanceof PrintToken) {  //print(exp);
+            
+        } else if (token instanceof PrintToken) {
             assertTokenHereIs(position + 1, new LeftParenToken());
             final ParseResult<Exp> exp = parseExp(position + 2);
             assertTokenHereIs(exp.position, new RightParenToken());
             assertTokenHereIs(exp.position + 1, new SemiColonToken());
             return new ParseResult<Stmt>(new PrintStmt(exp.result),
                                          exp.position + 2);
-										 
+            
         } else if (token instanceof BreakToken) { //break;
 			assertTokenHereIs(position + 1, new SemiColonToken());
 			return new ParseResult<Stmt>(new BreakStmt(), position);

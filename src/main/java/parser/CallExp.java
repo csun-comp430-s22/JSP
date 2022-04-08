@@ -3,10 +3,10 @@ package parser;
 import java.util.List;
 
 public class CallExp implements Exp {
-	public final Identifier ident;
-	public final List<Exp> params;
+	public final IdentifierExp ident;
+	public final List<ParseResult> params;
 	
-	public CallExp(final Identifier ident, final List<Exp> params) {
+	public CallExp(final IdentifierExp ident, final List<ParseResult> params) {
 		this.ident = ident;
 		this.params = params;
 	}
@@ -20,7 +20,7 @@ public class CallExp implements Exp {
 	}
 	
 	public String toString() {
-		return "CallExp(" + ident.toString() + ")";
+		return "CallExp(" + ident.toString() +"(" + params.toString() + ")" + ")";
 	}
 
 }
