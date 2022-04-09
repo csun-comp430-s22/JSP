@@ -7,9 +7,8 @@ public class IntegerToken implements Token {
         this.value = value;
     }
 
-    public boolean equals(final IntegerToken other) {
-        return (other instanceof IntegerToken &&
-                value == ((IntegerToken)other).value);
+    public boolean equals(final Object other) {
+        return (other instanceof IntegerToken && value == ((IntegerToken)other).value);
     }
 
     public int hashCode() {
