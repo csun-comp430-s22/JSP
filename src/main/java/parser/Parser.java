@@ -7,38 +7,29 @@ public class Parser {
     private final List<Token> tokens;
 
     public Parser(final List<Token> tokens) {
-    	
         this.tokens = tokens;
-    
     }
     
     public Token getToken(final int position) throws ParseException {
         if (position >= 0 && position < tokens.size()) {
-      
             return tokens.get(position);
-        
         } else {
-            
-        	
         	throw new ParseException("Invalid token position: " + position);
-        
-        }
-        
+        } 
     }
     
     public void assertTokenHereIs(final int position, final Token expected) throws ParseException {
         final Token received = getToken(position);
         
         if (!expected.equals(received)) {
-        	
             throw new ParseException("expected: " + expected + "; received: " + received);
-        
         }
     }
     
     //parses variable, integer, or (exp)
     public ParseResult<Exp> parsePrimaryExp(final int position) throws ParseException {
     	final Token token = getToken(position);
+    	
     	if(token instanceof IdentifierToken) {
     		final String name = ((IdentifierToken)token).name;
     		return new ParseResult<Exp>(new IdentifierExp(new Identifier(name)), position + 1); 
@@ -274,25 +265,18 @@ public class Parser {
     //parses a generic expression
     public ParseResult<Exp> parseExp(final int position) throws ParseException {
     	final Token token = getToken(position);
-    	final Token callToken = getToken(position + 1);
-    	if(token instanceof AddressToken) {
-    		final String addressName = ((AddressToken)token).name;
-    		return new ParseResult<Exp>(new AddressIdentExp(new Identifier(addressName)), position + 1);
-    	} else if(token instanceof PointerToken) {
-    		final String pointerName = ((PointerToken)token).name;
-    		return new ParseResult<Exp>(new PointerIdentExp(new Identifier(pointerName)), position + 1);
-    	} else if(token instanceof IdentifierToken) {
-    		final String name = ((IdentifierToken)token).name;
-    		if(callToken instanceof LeftParenToken) {
-    			List<ParseResult> paramsList = getParams(position + 2);
-    			int lastParam = paramsList.lastIndexOf(paramsList);
-    			ParseResult<Exp> lastExp = paramsList.get(lastParam);
-    			assertTokenHereIs(lastExp.position, new RightParenToken());
-    		    return new ParseResult<Exp>(new CallExp(new IdentifierExp(new Identifier(name)), paramsList), lastExp.position + 1);
-    		} else {
-    			return parseEqualsExp(position);
-    		}
-    	} else {
+    	Token callToken = null;
+    	if (token instanceof IdentifierToken) {
+    		return parseEqualsExp(position);
+    	} else if(token instanceof IntegerToken) {
+    		return parseEqualsExp(position);
+    	} else if(token instanceof AddressToken) {
+        		final String addressName = ((AddressToken)token).name;
+        		return new ParseResult<Exp>(new AddressIdentExp(new Identifier(addressName)), position + 1);
+        } else if(token instanceof PointerToken) {
+        		final String pointerName = ((PointerToken)token).name;
+        		return new ParseResult<Exp>(new PointerIdentExp(new Identifier(pointerName)), position + 1);
+    	}  else {
     		throw new ParseException("expected expression; recieved: " + token);
     	}
     }
@@ -336,7 +320,7 @@ public class Parser {
             return new ParseResult<Stmt>(new PrintStmt(exp.result),
                                          exp.position + 2);
             
-        } else if (token instanceof BreakToken) { //break;
+        } /*else if (token instanceof BreakToken) { //break;
 			assertTokenHereIs(position + 1, new SemiColonToken());
 			return new ParseResult<Stmt>(new BreakStmt(), position);
 		
@@ -344,7 +328,7 @@ public class Parser {
 			assertTokenHereIs(position + 1, new SemiColonToken());
 			return new ParseResult<Stmt>(new ReturnStmt(), position);
 		
-		} 
+		} */
 		
 		else {
             throw new ParseException("expected statement; received: " + token);
