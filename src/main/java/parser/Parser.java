@@ -26,11 +26,50 @@ public class Parser {
         }
     }
     
+  //Pointer op for * | &
+    public ParseResult<Op> parsePointerOp(final int position) throws ParseException{
+    	final Token token = getToken(position);
+    	
+    	if(token instanceof MultiplicationToken) {
+    		
+    		return new ParseResult<Op>(new PointerOp(), position + 1);
+    	
+    	}else if(token instanceof AddressToken) {
+    		
+    		return new ParseResult<Op>(new AddressOp(), position + 1);
+    	
+    	} else {
+    		throw new ParseException("expected * or &; recieved: " + token);
+    	}
+    }
+    
     //parses variable, integer, or (exp)
     public ParseResult<Exp> parsePrimaryExp(final int position) throws ParseException {
     	final Token token = getToken(position);
     	
-    	if(token instanceof IdentifierToken) {
+    	if(token instanceof MultiplicationToken) {
+    		final Token pointerToken = getToken(position + 1);
+    		final ParseResult<Exp> pointer = parsePrimaryExp(position + 1);
+    		if(pointerToken instanceof IdentifierToken) {
+    			final ParseResult<Op> pointerOp = parsePointerOp(pointer.position - 2);
+    			return new ParseResult<Exp>(new PointerExp(pointerOp.result,
+    														pointer.result), 
+    										pointer.position);
+    		} else {
+    			throw new ParseException("expected IdentifierToken; received: " + pointerToken);
+    		}
+    	} else if(token instanceof AddressToken) {
+    		final Token addressToken = getToken(position + 1);
+    		final ParseResult<Exp> address = parsePrimaryExp(position + 1);
+    		if(addressToken instanceof IdentifierToken) {
+    			final ParseResult<Op> addressOp = parsePointerOp(address.position - 2);
+    			return new ParseResult<Exp>(new PointerExp(addressOp.result,
+    														address.result), 
+    										address.position);
+    		} else {
+    			throw new ParseException("expected IdentifierToken; received: " + addressToken);
+    		}
+    	} else if(token instanceof IdentifierToken) {
     		final String name = ((IdentifierToken)token).name;
     		return new ParseResult<Exp>(new IdentifierExp(new Identifier(name)), position + 1); 
     	}else if(token instanceof IntegerToken) {
@@ -234,8 +273,8 @@ public class Parser {
     }
     
     //returns a parameter list to fill the parenthesis of a call expression
-    public List<ParseResult> getParams(final int position) throws ParseException {
-    	final List<ParseResult> paramsList = new ArrayList<ParseResult>();
+   /* public List<Exp> getParams(final int position) throws ParseException {
+    	final List<Exp> paramsList = new ArrayList<Exp>();
     	final Token token = getToken(position);
     	if(token instanceof RightParenToken) {
     		return null;
@@ -260,25 +299,11 @@ public class Parser {
 				return paramsList;
 			}
     	}
-    }
+    }*/
     
     //parses a generic expression
     public ParseResult<Exp> parseExp(final int position) throws ParseException {
-    	final Token token = getToken(position);
-    	Token callToken = null;
-    	if (token instanceof IdentifierToken) {
-    		return parseEqualsExp(position);
-    	} else if(token instanceof IntegerToken) {
-    		return parseEqualsExp(position);
-    	} else if(token instanceof AddressToken) {
-        		final String addressName = ((AddressToken)token).name;
-        		return new ParseResult<Exp>(new AddressIdentExp(new Identifier(addressName)), position + 1);
-        } else if(token instanceof PointerToken) {
-        		final String pointerName = ((PointerToken)token).name;
-        		return new ParseResult<Exp>(new PointerIdentExp(new Identifier(pointerName)), position + 1);
-    	}  else {
-    		throw new ParseException("expected expression; recieved: " + token);
-    	}
+    	return parseEqualsExp(position);
     }
    
     //parse stmt
