@@ -1,9 +1,9 @@
 package lexer;
 
-public class IntegerToken implements Token {
+public class Int implements Token {
 
     public boolean equals(final Object other) {
-        return other instanceof IntegerToken;
+        return other instanceof Int;
     }
 
     public int hashCode() {

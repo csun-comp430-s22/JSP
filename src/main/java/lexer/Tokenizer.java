@@ -77,13 +77,13 @@ public class Tokenizer {
             } else if(name.equals("print")) {
             	return new PrintToken();
             } else if(name.equals("Int")) {
-            	return new IntegerToken();
-            } else if(name.equals("String")) {
-            	return new StringToken();
+            	return new IntToken();
             } else if(name.equals("Boolean")) {
             	return new BooleanToken();
             } else if(name.equals("Void")) {
             	return new VoidToken();
+            } else if(name.equals("struct")) {
+            	return new StructToken();
             } else {
                 return new IdentifierToken(name);
             }

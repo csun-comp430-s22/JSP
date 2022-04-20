@@ -73,12 +73,7 @@ public class TokenizerTest {
 	
 	@Test
 	public void testIntByItself() throws TokenizerException {
-		assertTokenizes("Int", new Token[] { new IntegerToken()});
-	}
-	
-	@Test
-	public void testStringByItself() throws TokenizerException {
-		assertTokenizes("String", new Token[] { new StringToken()});
+		assertTokenizes("Int", new Token[] { new IntToken()});
 	}
 	
 	@Test
@@ -89,6 +84,11 @@ public class TokenizerTest {
 	@Test
 	public void testVoidByItself() throws TokenizerException {
 		assertTokenizes("Void", new Token[] { new VoidToken()});
+	}
+	
+	@Test
+	public void testStructByItself() throws TokenizerException {
+		assertTokenizes("struct", new Token[] { new StructToken()});
 	}
 	
 	@Test(expected = TokenizerException.class)

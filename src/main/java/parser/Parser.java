@@ -111,8 +111,8 @@ public class Parser {
     		} else {
         		return new ParseResult<Exp>(new IdentifierExp(new Identifier(name)), position + 1);
     		}
-    	} else if(token instanceof IntegerToken) {
-    		final int value = ((IntegerToken)token).value;
+    	} else if(token instanceof IntegerVariable) {
+    		final int value = ((IntegerVariable)token).value;
     		return new ParseResult<Exp>(new IntegerExp(value), position + 1);
     	} else if(token instanceof LeftParenToken) {
     		final ParseResult<Exp> inParens = parseExp(position + 1);
