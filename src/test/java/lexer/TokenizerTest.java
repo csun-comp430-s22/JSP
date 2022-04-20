@@ -86,6 +86,11 @@ public class TokenizerTest {
 		assertTokenizes("Boolean", new Token[] { new BooleanToken()});
 	}
 	
+	@Test
+	public void testVoidByItself() throws TokenizerException {
+		assertTokenizes("Void", new Token[] { new VoidToken()});
+	}
+	
 	@Test(expected = TokenizerException.class)
 	public void testInvalid() throws TokenizerException {
 		assertTokenizes("$", null);
@@ -148,18 +153,18 @@ public class TokenizerTest {
 	}
 	
 	@Test
-	public void testGreaterThan() throws TokenizerException{
-		assertTokenizes(">", new Token[] { new GreaterThanToken()});
+	public void testGreaterThan() throws TokenizerException {
+		assertTokenizes(">", new Token[] { new GreaterThanToken() });
 	}
 	
 	@Test
-	public void testLessThan() throws TokenizerException{
-		assertTokenizes("<", new Token[] { new LessThanToken()} );
+	public void testLessThan() throws TokenizerException {
+		assertTokenizes("<", new Token[] { new LessThanToken() });
 	}
 	
 	@Test
-	public void testEqualsTo() throws TokenizerException{
-		assertTokenizes("==", new Token[] { new EqualsToToken()} );
+	public void testEqualTo() throws TokenizerException {
+		assertTokenizes("==", new Token[] { new EqualsToToken() });
 	}
 	
 	@Test
@@ -172,14 +177,9 @@ public class TokenizerTest {
 		assertTokenizes(",", new Token[] { new CommaToken() });
 	}
 	
-	/*@Test
-	public void test() {
-		fail("Not yet implemented");
-	}
-	
 	@Test
-	public void test() {
-		fail("Not yet implemented");
-	}*/
+	public void testAddress() throws TokenizerException {
+		assertTokenizes("&", new Token[] { new AddressToken() });
+	}
 
 }

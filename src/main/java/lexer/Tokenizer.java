@@ -82,45 +82,10 @@ public class Tokenizer {
             	return new StringToken();
             } else if(name.equals("Boolean")) {
             	return new BooleanToken();
+            } else if(name.equals("Void")) {
+            	return new VoidToken();
             } else {
                 return new IdentifierToken(name);
-            }
-        } else {
-            return null;
-        }
-    }
-    
-    public Token tryTokenizeAddressOrPointer() {
-        skipWhitespace();
-        
-        String name = "";
-
-        //read characters individually
-        //first variable char is a & or *
-        //followed by letter
-        //followed by letter or integer
-        if (offset < input.length() &&
-            (input.charAt(offset) == '&') || (input.charAt(offset) == '*')) {
-            name += input.charAt(offset);
-            offset++;
-            
-            if(offset < input.length() &&
-            	Character.isLetter(input.charAt(offset))) {
-            	name += input.charAt(offset);
-            	offset++;
-            }
-
-            while (offset < input.length() &&
-                   Character.isLetterOrDigit(input.charAt(offset))) {
-                name += input.charAt(offset);
-                offset++;
-            }
-
-            //name holds potential variable
-            if (name.startsWith("&")) {
-                return new AddressToken(name);
-            } else {
-                return new PointerToken(name);
             }
         } else {
             return null;
@@ -174,6 +139,9 @@ public class Tokenizer {
         } else if (input.startsWith(",", offset)) {
         	offset += 1;
         	val = new CommaToken();
+        } else if (input.startsWith("&", offset)) {
+        	offset += 1;
+        	val = new AddressToken();
         }
 
         return val;
@@ -185,7 +153,6 @@ public class Tokenizer {
         skipWhitespace();
         if (offset < input.length() &&
             (retval = tryTokenizeIdentifierOrKeyword()) == null &&
-            (retval = tryTokenizeAddressOrPointer()) == null &&
             (retval = tryTokenizeInteger()) == null &&
             (retval = tryTokenizeSymbol()) == null) {
             throw new TokenizerException();
