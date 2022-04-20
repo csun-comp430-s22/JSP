@@ -38,21 +38,6 @@ public class ParserTest {
 		assertEquals(new IntegerToken(123), parser.getToken(0));
 	}
 	
-	/*@Test
-	public void testPrimaryPointerExp() throws ParseException{
-		final List<Token> singlePointerToken = createTokenArrayList(new MultiplicationToken());
-		final Parser parser = new Parser(singlePointerToken);
-		assertEquals(new ParseResult<Exp>(null, 0), parser.parsePrimaryExp(0));
-	}
-	
-	@Test
-	public void testPrimaryAddressExp() throws ParseException{
-		final List<Token> singleAddressToken = createTokenArrayList(new AddressToken());
-		final Parser parser = new Parser(singleAddressToken);
-		assertEquals(new ParseResult<Exp>(null, 0), parser.parsePrimaryExp(0));
-	}*/
-	
-	
 	@Test
 	public void testPrimaryIdentifierPrimaryExp() throws ParseException{
 		final List<Token> singleIdentifierToken = createTokenArrayList(new IdentifierToken("x"));
@@ -189,6 +174,49 @@ public class ParserTest {
 		final Exp expected = new PointerExp(new AddressOp(),
 									   		new IdentifierExp(new Identifier("x")));
 		assertEquals(new ParseResult<Exp>(expected, 2), parser.parsePrimaryExp(0));
+	}
+	
+	@Test
+	public void testCallExpEmpty() throws ParseException{
+		List params = new ArrayList();
+		params.add(3);
+		final Parser parser = new Parser(Arrays.asList(new IdentifierToken("x"),
+				   									   new LeftParenToken(),
+				   									   new RightParenToken()));
+		final Exp expected = new CallExp(new IdentifierExp(new Identifier("x")),
+										 params);
+		assertEquals(new ParseResult<Exp>(expected, 3), parser.parsePrimaryExp(0));
+	}
+	
+	@Test
+	public void testCallExpIdentifierParam() throws ParseException{
+		List params = new ArrayList();
+		params.add(new ParseResult<Exp>(new IdentifierExp(new Identifier("y")), 3));
+		params.add(4);
+		final Parser parser = new Parser(Arrays.asList(new IdentifierToken("x"),
+				   									   new LeftParenToken(),
+				   									   new IdentifierToken("y"),
+				   									   new RightParenToken()));
+		final Exp expected = new CallExp(new IdentifierExp(new Identifier("x")),
+										 params);
+		assertEquals(new ParseResult<Exp>(expected, 4), parser.parsePrimaryExp(0));
+	}
+	
+	@Test
+	public void testCallExpMultiParam() throws ParseException{
+		List params = new ArrayList();
+		params.add(new ParseResult<Exp>(new IdentifierExp(new Identifier("y")), 3));
+		params.add(new ParseResult<Exp>(new IntegerExp(1), 5));
+		params.add(6);
+		final Parser parser = new Parser(Arrays.asList(new IdentifierToken("x"),
+				   									   new LeftParenToken(),
+				   									   new IdentifierToken("y"),
+				   									   new CommaToken(),
+				   									   new IntegerToken(1),
+				   									   new RightParenToken()));
+		final Exp expected = new CallExp(new IdentifierExp(new Identifier("x")),
+										 params);
+		assertEquals(new ParseResult<Exp>(expected, 6), parser.parsePrimaryExp(0));
 	}
 	
 	

@@ -4,9 +4,9 @@ import java.util.List;
 
 public class CallExp implements Exp {
 	public final IdentifierExp ident;
-	public final List<ParseResult> params;
+	public final List params;
 	
-	public CallExp(final IdentifierExp ident, final List<ParseResult> params) {
+	public CallExp(final IdentifierExp ident, final List params) {
 		this.ident = ident;
 		this.params = params;
 	}

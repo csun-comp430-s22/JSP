@@ -26,6 +26,39 @@ public class Parser {
         }
     }
     
+  //returns a parameter list to fill the parenthesis of a call expression
+    public List getParams(final int position) throws ParseException {
+    	if(tokens.size() > position) {
+			final Token callToken = getToken(position);
+			if(callToken instanceof LeftParenToken) {
+				final List paramsList = new ArrayList();
+				ParseResult<Exp> parameter = new ParseResult<Exp>(null, position + 1);
+	 			boolean shouldRun = true;
+	 	        while(shouldRun) {
+	 	        	try {
+	 	        		Token commaToken = getToken(parameter.position);
+	 	        		if(commaToken instanceof CommaToken) {
+	 	        			parameter = parseExp(parameter.position + 1);
+		 	        		paramsList.add(parameter);
+	 	        		} else {
+	 	        			parameter = parseExp(parameter.position);
+		 	        		paramsList.add(parameter);
+	 	        		}
+	 	        	} catch(final ParseException e) {
+	 	        		shouldRun = false;
+	 	        	}
+	 	        }
+	 	        assertTokenHereIs(parameter.position, new RightParenToken());
+	 	        paramsList.add(parameter.position + 1);
+	 	        return paramsList;
+	 		} else {
+	 			return null;
+	 		}
+		} else {
+			return null;
+		}
+     }
+    
   //Pointer op for * | &
     public ParseResult<Op> parsePointerOp(final int position) throws ParseException{
     	final Token token = getToken(position);
@@ -71,8 +104,14 @@ public class Parser {
     		}
     	} else if(token instanceof IdentifierToken) {
     		final String name = ((IdentifierToken)token).name;
-    		return new ParseResult<Exp>(new IdentifierExp(new Identifier(name)), position + 1); 
-    	}else if(token instanceof IntegerToken) {
+    		List params = getParams(position + 1);
+    		if(params != null) {
+    			final int callPosition = (Integer) params.get(params.size() - 1);
+    			return new ParseResult<Exp>(new CallExp(new IdentifierExp(new Identifier(name)), params), callPosition);
+    		} else {
+        		return new ParseResult<Exp>(new IdentifierExp(new Identifier(name)), position + 1);
+    		}
+    	} else if(token instanceof IntegerToken) {
     		final int value = ((IntegerToken)token).value;
     		return new ParseResult<Exp>(new IntegerExp(value), position + 1);
     	} else if(token instanceof LeftParenToken) {
@@ -271,35 +310,6 @@ public class Parser {
     	
     	return current;
     }
-    
-    //returns a parameter list to fill the parenthesis of a call expression
-   /* public List<Exp> getParams(final int position) throws ParseException {
-    	final List<Exp> paramsList = new ArrayList<Exp>();
-    	final Token token = getToken(position);
-    	if(token instanceof RightParenToken) {
-    		return null;
-    	} else {
-    		ParseResult<Exp> parameter = parseExp(position);
-    		final Token checkCommaToken = getToken(parameter.position);
-			paramsList.add(parameter);
-			if(checkCommaToken instanceof CommaToken) {
-				boolean shouldRun = true;
-	        	while(shouldRun) {
-	        		try {
-	        			parameter = parseExp(parameter.position + 1);
-	        			paramsList.add(parameter);
-	        		} catch(final ParseException e) {
-	        			shouldRun = false;
-	        		}
-	        	}
-	        	
-	        	return paramsList;
-	        	
-			} else {
-				return paramsList;
-			}
-    	}
-    }*/
     
     //parses a generic expression
     public ParseResult<Exp> parseExp(final int position) throws ParseException {
