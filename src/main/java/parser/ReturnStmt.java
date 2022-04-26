@@ -1,21 +1,28 @@
 package parser;
 
+import java.util.List;
+
 public class ReturnStmt implements Stmt {
-	public final Exp exp;
 	
-	public ReturnStmt(final Exp exp) {
-		this.exp = exp;
-	}
+	public final List<Stmt> stmt;
 	
-	public int hashCode() {
-		return exp.hashCode();
+	public ReturnStmt(final List<Stmt> stmt) {
+		this.stmt = stmt;
 	}
 	
 	public boolean equals(final Object other) {
-		return (other instanceof ReturnStmt && exp.equals(((ReturnStmt)other).exp));
-	}
-	
-	public String toString() {
-		return "ReturnStmt(" + exp.toString() + ")";
-	}
+        if(other instanceof ReturnStmt) {
+            final ReturnStmt otherstmt = (ReturnStmt)other;
+            return (otherstmt.stmt.equals(this.stmt));
+        } else {
+            return false;
+        }
+    }
+    public String toString() {
+        return "ReturnStmt(" +
+                stmt.toString() + ")";
+    }
+    public int hashCode() {
+        return (stmt.hashCode());
+    }
 }

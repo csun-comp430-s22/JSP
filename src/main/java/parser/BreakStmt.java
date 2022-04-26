@@ -1,21 +1,25 @@
 package parser;
 
 public class BreakStmt implements Stmt {
-	public final Exp exp;
+	public final Stmt stmt;
 	
-	public BreakStmt(final Exp exp) {
-		this.exp = exp;
+	public BreakStmt(final Stmt stmt) {
+		this.stmt = stmt;
 	}
-	
-	public int hashCode() {
-		return exp.hashCode();
-	}
-	
+
 	public boolean equals(final Object other) {
-		return (other instanceof BreakStmt && exp.equals(((BreakStmt)other).exp));
-	}
-	
-	public String toString() {
-		return "BreakStmt(" + exp.toString() + ")";
-	}
+        if(other instanceof BreakStmt) {
+            final BreakStmt otherstmt = (BreakStmt)other;
+            return (otherstmt.stmt.equals(this.stmt));
+        } else {
+            return false;
+        }
+    }
+    public String toString() {
+        return "BlockStmt(" +
+                stmt.toString() + ")";
+    }
+    public int hashCode() {
+        return (stmt.hashCode());
+    }
 }
