@@ -425,131 +425,97 @@ public class Parser {
         }
     }
 	
-	 //Int Type
-    /*public ParseResult<Type> parseIntType(final int position) throws ParseException{
-    	//final Type type = getType(position);
-    	final Token token = getToken(position);
-    	
-    	if(token instanceof IntToken) {
-    		return new ParseResult<Type>(new IntType(), position + 1);
-    	}else {
-    		throw new ParseException("expected Int; revieved: " + token);
-    	}
-    }
-    
-    //Boolean Type
-    public ParseResult<Type> parseBooleanType(final int position) throws ParseException{
-    	final Token token = getToken(position);
-    	if(token instanceof BooleanToken) {
-    		return new ParseResult<Type>(new BoolType(), position + 1);
-    	}else {
-    		throw new ParseException("expected Boolean; recieved: " + token);
-    	}
-    }
-    
-    //Void Type
-    public ParseResult<Type> parseVoidType(final int position) throws ParseException{
-    	final Token token = getToken(position);
-    	if(token instanceof VoidToken) {
-    		return new ParseResult<Type>(new VoidType(), position + 1);
-    	}else {
-    		throw new ParseException("expected Void; recieved: " + token);
-    	}
-    }
-    
-    //Struct Type
-    public ParseResult<Type> parseStructType(final int position) throws ParseException{
-    	final Token token = getToken(position);
-    	if(token instanceof StructToken) {
-    		return new ParseResult<Type>(new StructNameType(), position + 1);
-    	}else {
-    		throw new ParseException("expected Struct; recieved: " + token);
-    	}
-    }*/
-	
 	public List getArgs(final int position) throws ParseException {
 		final List argsList = new ArrayList();
-		ParseResult<Type> arguement = parseType(position);
-		argsList.add(arguement);
-	 	boolean shouldRun = true;
-	 	while(shouldRun) {
-	 		try {
-	 	        Token commaToken = getToken(arguement.position);
-	 	        if(commaToken instanceof CommaToken) {
-	 	        	arguement = parseType(arguement.position + 1);
-		 	        argsList.add(arguement);
-	 	        }
-	 	     } catch(final ParseException e) {
-	 	        shouldRun = false;
-	 	     }
-	 	 }
-	 	 assertTokenHereIs(arguement.position, new RightParenToken());
-	 	 argsList.add(arguement.position + 1);
-	 	 return argsList;
+		if(tokens.size() > position + 1) {
+			final Token typeToken = getToken(position); 
+			if(typeToken instanceof RightParenToken) {
+				argsList.add(position + 1);
+				return argsList;
+			} else {
+				ParseResult<Type> argument = new ParseResult<Type>(null, position);
+			 	boolean shouldRun = true;
+			 	while(shouldRun) {
+			 		try {
+			 	        Token commaToken = getToken(argument.position);
+			 	        if(commaToken instanceof CommaToken) {
+			 	        	argument = parseType(argument.position + 1);
+				 	        argsList.add(argument);
+			 	        } else {
+			 	        	argument = parseType(argument.position);
+		 	        		argsList.add(argument);
+			 	        }
+			 	     } catch(final ParseException e) {
+			 	        shouldRun = false;
+			 	     }
+			 	}
+			 	assertTokenHereIs(argument.position, new RightParenToken());
+			 	argsList.add(argument.position + 1);
+			 	return argsList;
+			} 
+		} else {
+			throw new ParseException("expected arguments or RightParenToken but there are no more tokens");
+		}
      }
 	
-    public ParseResult<Type> parseType(final int position) throws ParseException{
+    public ParseResult<Type> parsePrimaryType(final int position) throws ParseException{
     	final Token type = getToken(position);
-    	if(type instanceof IntType) {
-    		if(tokens.size() > position + 1) {
-    			final Token pointerToken = getToken(position + 1);
-    	    	if(pointerToken instanceof MultiplicationToken) {
-    	    		return new ParseResult<Type>(new IntPointerType(), position + 2);
-    	    	} else {
-    	    		return new ParseResult<Type>(new IntType(), position + 1);
-    	    	}
-    		} else {
-    			return new ParseResult<Type>(new IntType(), position + 1);
-    		}
-    	} else if(type instanceof BoolType) {
-    		if(tokens.size() > position + 1) {
-    			final Token pointerToken = getToken(position + 1);
-    	    	if(pointerToken instanceof MultiplicationToken) {
-    	    		return new ParseResult<Type>(new BoolPointerType(), position + 2);
-    	    	} else {
-    	    		return new ParseResult<Type>(new BoolType(), position + 1);
-    	    	}
-    		} else {
-    			return new ParseResult<Type>(new BoolType(), position + 1);
-    		}
-    	} else if(type instanceof VoidType) {
-    		if(tokens.size() > position + 1) {
-    			final Token pointerToken = getToken(position + 1);
-    	    	if(pointerToken instanceof MultiplicationToken) {
-    	    		return new ParseResult<Type>(new VoidPointerType(), position + 2);
-    	    	} else {
-    	    		return new ParseResult<Type>(new VoidType(), position + 1);
-    	    	}
-    		} else {
-    			return new ParseResult<Type>(new VoidType(), position + 1);
-    		}
-    	} else if(type instanceof StructNameType) {
-    		if(tokens.size() > position + 1) {
-    			final Token pointerToken = getToken(position + 1);
-    	    	if(pointerToken instanceof MultiplicationToken) {
-    	    		return new ParseResult<Type>(new StructNamePointerType(), position + 2);
-    	    	} else {
-    	    		return new ParseResult<Type>(new StructNameType(), position + 1);
-    	    	}
-    		} else {
-    			return new ParseResult<Type>(new StructNameType(), position + 1);
-    		}
+    	if(type instanceof IntToken) {
+    		return new ParseResult<Type>(new IntType(), position + 1);
+    	} else if(type instanceof BooleanToken) {
+    		return new ParseResult<Type>(new BoolType(), position + 1);
+    	} else if(type instanceof VoidToken) {
+    		return new ParseResult<Type>(new VoidType(), position + 1);
+    	} else if(type instanceof StructNameToken) {
+    		final String name = ((StructNameToken)type).name;
+    		return new ParseResult<Type>(new StructNameType(new StructName(name)), position + 1);
     	} else if(type instanceof LeftParenToken) {
     		List argTypes = getArgs(position + 1);
     		final int argsPosition = (Integer) argTypes.get(argTypes.size() - 1);
-    		if(tokens.size() > argsPosition + 1) {
-        		final Token functionPointerToken = getToken(argsPosition);
-        	    if(functionPointerToken instanceof FunctionPointerToken) {
-        	    	final ParseResult<Type> returnType = parseType(argsPosition + 1);
-        	    	return new ParseResult<Type>(new FunctionPointerType(argTypes, returnType), position + 1);
-        	    } else {
-        	    	throw new ParseException("expected special function pointer token; recieved: " + functionPointerToken);
-        	    }
-        	} else {
-        		throw new ParseException("expected special function pointer type; No tokens left after function pointer arguments ");
-    	   	}
+        	if(tokens.size() > argsPosition + 1) {
+           		final Token functionPointerToken = getToken(argsPosition);
+           	    if(functionPointerToken instanceof FunctionPointerToken) {
+           	    	final ParseResult<Type> returnType = parseType(argsPosition + 1);
+           	    	return new ParseResult<Type>(new FunctionPointerType(argTypes, returnType), returnType.position);
+           	    } else {
+           	    	throw new ParseException("expected special function pointer token; recieved: " + functionPointerToken);
+           	    }
+           	} else {
+           		throw new ParseException("expected special function pointer type; No tokens left after function pointer arguments ");
+        	}
     	} else { 
     		throw new ParseException("expected Int, Bool, Void, Pointer, or Struct; recieved: " + type);
     	}
+    }
+    
+    public ParseResult<Op> parsePointerTypeOp(final int position) throws ParseException{
+    	final Token token = getToken(position);
+    	
+    	if(token instanceof MultiplicationToken) {
+    		return new ParseResult<Op>(new PointerTypeOp(), position + 1);
+    	} else {
+    		throw new ParseException("expected *; recieved: " + token);
+    	}
+    }
+    
+    public ParseResult<Type> parsePointerType(final int position) throws ParseException{
+    	ParseResult<Type> current = parsePrimaryType(position);
+    	boolean shouldRun = true;
+    	
+    	while(shouldRun) {
+    		try {
+    			final ParseResult<Op> pointerTypeOp = parsePointerTypeOp(current.position);
+    			current = new ParseResult<Type>(new PointerType(current.result,
+    													pointerTypeOp.result),
+    											pointerTypeOp.position);
+    		} catch(final ParseException e) {
+    			shouldRun = false;
+    		}
+    	}
+    	return current;
+    }
+    
+    public ParseResult<Type> parseType(final int position) throws ParseException{
+    	return parsePointerType(position);
     }
 }

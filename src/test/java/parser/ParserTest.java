@@ -1,5 +1,3 @@
-package parser;
-
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
@@ -399,6 +397,102 @@ public class ParserTest {
                                                  new AddOp(),
                                                  new IntegerExp(3)));
         assertEquals(new ParseResult<Exp>(expected, 5), parser.parseComparisonExp(0));
+    }
+    
+    @Test
+	public void testIntType() throws ParseException{
+		final List<Token> singleIntToken = createTokenArrayList(new IntToken());
+		final Parser parser = new Parser(singleIntToken);
+		assertEquals(new ParseResult<Type>(new IntType(), 1), parser.parseType(0));
+	}
+    
+    @Test
+	public void testBoolType() throws ParseException{
+		final List<Token> singleBooleanToken = createTokenArrayList(new BooleanToken());
+		final Parser parser = new Parser(singleBooleanToken);
+		assertEquals(new ParseResult<Type>(new BoolType(), 1), parser.parseType(0));
+	}
+    
+    @Test
+	public void testVoidType() throws ParseException{
+		final List<Token> singleVoidToken = createTokenArrayList(new VoidToken());
+		final Parser parser = new Parser(singleVoidToken);
+		assertEquals(new ParseResult<Type>(new VoidType(), 1), parser.parseType(0));
+	}
+    
+    @Test
+	public void testStructNameType() throws ParseException{
+		final List<Token> singleStructNameToken = createTokenArrayList(new StructNameToken("x"));
+		final Parser parser = new Parser(singleStructNameToken);
+		assertEquals(new ParseResult<Type>(new StructNameType(new StructName("x")), 1), parser.parseType(0));
+	}
+    
+    @Test
+	public void testPointerTypeInt() throws ParseException{
+		final Parser parser = new Parser(Arrays.asList(new IntToken(),
+				   									   new MultiplicationToken()));
+		final Type expected = new PointerType(new IntType(),
+									   		new PointerTypeOp());
+		assertEquals(new ParseResult<Type>(expected, 2), parser.parsePointerType(0));
+	}
+    
+    @Test
+	public void testFunctionPointerTypeNoArgs() throws ParseException{
+    	List args = new ArrayList();
+		args.add(2);
+		final Parser parser = new Parser(Arrays.asList(new LeftParenToken(),
+				   									   new RightParenToken(),
+				   									   new FunctionPointerToken(),
+				   									   new IntToken()));
+		final Type expected = new FunctionPointerType(args,
+									   				  new ParseResult<Type>(new IntType(), 4));
+		assertEquals(new ParseResult<Type>(expected, 4), parser.parsePrimaryType(0));
+	}
+    
+    @Test
+	public void testFunctionPointerTypeVoidReturn() throws ParseException{
+    	List args = new ArrayList();
+		args.add(2);
+		final Parser parser = new Parser(Arrays.asList(new LeftParenToken(),
+				   									   new RightParenToken(),
+				   									   new FunctionPointerToken(),
+				   									   new VoidToken()));
+		final Type expected = new FunctionPointerType(args,
+									   				  new ParseResult<Type>(new VoidType(), 4));
+		assertEquals(new ParseResult<Type>(expected, 4), parser.parsePrimaryType(0));
+	}
+    
+    @Test
+    public void testFunctionPointerTypeIntArg() throws ParseException{
+    	List args = new ArrayList();
+    	args.add(new ParseResult<Type>(new IntType(), 2));
+    	args.add(3);
+    	final Parser parser = new Parser(Arrays.asList(new LeftParenToken(),
+    												   new IntToken(),
+    												   new RightParenToken(),
+    												   new FunctionPointerToken(),
+    												   new IntToken()));
+    	final Type expected = new FunctionPointerType(args,
+    												  new ParseResult<Type>(new IntType(), 5));
+    	assertEquals(new ParseResult<Type>(expected, 5), parser.parsePrimaryType(0));
+    }
+    
+    @Test
+    public void testFunctionPointerTypeMultiArg() throws ParseException{
+    	List args = new ArrayList();
+    	args.add(new ParseResult<Type>(new IntType(), 2));
+    	args.add(new ParseResult<Type>(new BoolType(), 4));
+    	args.add(5);
+    	final Parser parser = new Parser(Arrays.asList(new LeftParenToken(),
+    												   new IntToken(),
+    												   new CommaToken(),
+    												   new BooleanToken(),
+    												   new RightParenToken(),
+    												   new FunctionPointerToken(),
+    												   new VoidToken()));
+    	final Type expected = new FunctionPointerType(args,
+    												  new ParseResult<Type>(new VoidType(), 7));
+    	assertEquals(new ParseResult<Type>(expected, 7), parser.parsePrimaryType(0));
     }
     
     /*@Test
