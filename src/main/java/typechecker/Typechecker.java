@@ -75,7 +75,7 @@ public class Typechecker{
 		return fdef.returnType;
 	}
 	
-	//op ::= + | < | &&
+	//op ::= + | - | * | / | . | < | > | && || ==
 	public Type typeofOp(final OpExp exp, final Map<Identifier, Type> typeEnviornment) throws TypeErrorException{
 		final Type leftType = typeof(exp.left, typeEnviornment);
 		final Type rightType = typeof(exp.right, typeEnviornment);
@@ -85,7 +85,32 @@ public class Typechecker{
 			}else {
 				throw new TypeErrorException("Incorrect types for +");
 			}
-		}else if(exp.op instanceof LessThanOp) {
+		}else if(exp.op instanceof MinusOp) {
+			if(leftType instanceof IntType && rightType instanceof IntType) {
+				return new IntType();
+			}else {
+				throw new TypeErrorException("Incorrect types for -");
+			}
+		}else if(exp.op instanceof MultiplicationOp) {
+			if(leftType instanceof IntType && rightType instanceof IntType) {
+				return new IntType();
+			}else {
+				throw new TypeErrorException("Incorrect types for *");
+			}
+		}else if(exp.op instanceof DivisionOp) {
+			if(leftType instanceof IntType && rightType instanceof IntType) {
+				return new IntType();
+			}else {
+				throw new TypeErrorException("Incorrect types for /");
+			}
+		}else if(exp.op instanceof DotOp) {
+			if(leftType instanceof IntType && rightType instanceof IntType) {
+				return new IntType();
+			}else {
+				throw new TypeErrorException("Incorrect type for .");
+			}
+		}
+		else if(exp.op instanceof LessThanOp) {
 			if(leftType instanceof IntType && rightType instanceof IntType) {
 				return new BoolType();
 			}else {
@@ -103,15 +128,26 @@ public class Typechecker{
 			}else {
 				throw new TypeErrorException("Incorrect types for &&");
 			}
-		}else {
+		}else if(exp.op instanceof EqualToOp) {
+			if(leftType instanceof BoolType && rightType instanceof BoolType) {
+				return new BoolType();
+			}else {
+				throw new TypeErrorException("Incorrect types for ==");
+			}
+		} else {
 			throw new TypeErrorException("Unsupported operation" + exp.op);
 		}
 	}
 	
 	//type enviornment: Indentifier -> Type
 	public Type typeof(final Exp exp, final Map<Identifier, Type> typeEnviornment) throws TypeErrorException{
+		
 		if(exp instanceof BooleanLiteralExp) {
 			return new BoolType();
+		}else if(exp instanceof VoidLiteralExp) {
+			return new VoidType();
+		}else if(exp instanceof StructNameLiteralExp) {
+			return new StructNameType();
 		}else if(exp instanceof IntegerLiteralExp) {
 			return new IntType();
 		}else if(exp instanceof IdentifierExp) {
