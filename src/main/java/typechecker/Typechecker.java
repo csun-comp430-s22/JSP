@@ -5,31 +5,6 @@ import parser.*;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
-
-import parser.AddOp;
-import parser.AndOp;
-import parser.BlockStmt;
-import parser.BoolType;
-import parser.BooleanLiteralExp;
-import parser.Exp;
-import parser.Funcdef;
-import parser.FunctionCallExp;
-import parser.FunctionName;
-import parser.GreaterThanOp;
-import parser.Identifier;
-import parser.IdentifierExp;
-import parser.IfStmt;
-import parser.IntType;
-import parser.IntegerLiteralExp;
-import parser.LessThanOp;
-import parser.OpExp;
-import parser.Program;
-import parser.ReturnStmt;
-import parser.Stmt;
-import parser.Type;
-import parser.VardecStmt;
-import parser.WhileStmt;
-
 import java.util.HashMap;
 
 public class Typechecker{
