@@ -1,3 +1,5 @@
+package parser;
+
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
@@ -495,119 +497,123 @@ public class ParserTest {
     	assertEquals(new ParseResult<Type>(expected, 7), parser.parsePrimaryType(0));
     }
     
-    /*@Test
-	public void testCallExpEmpty() throws ParseException{
-    	// x( )
-		final Parser parser = new Parser(Arrays.asList(new IdentifierToken("x"),
-														new LeftParenToken(),
-														new RightParenToken()));
-		final Exp expected = new CallExp(new IdentifierExp(new Identifier("x")), null), 3);
-		assertEquals(new ParseResult<Exp>(new IdentifierExp(new Identifier("x")), 1), parser.parsePrimaryExp(0));
-	}*/
-    
-    /*@Test
-	public void testCallExp() throws ParseException{
-    	// x( 1 + 2 )
-		final Parser parser = new Parser(Arrays.asList(new IdentifierToken("x"),
-														new LeftParenToken(),
-														new IntegerToken(1),
-														new AddToken(),
-														new IntegerToken(2),
-														new RightParenToken()));
-		final Exp expected = new CallExp(new IdentifierExp(new Identifier("x")), paramsList), 6);
-		assertEquals(new ParseResult<Exp>(new IdentifierExp(new Identifier("x")), 1), parser.parsePrimaryExp(0));
-	}*/
-    
-    //Modify test later, tests all statements
-    /*@Test
+    @Test
     public void testIfStmts() throws ParseException{
-    	//if(1) 1 + 1 else x < 3
+    	//if(1) print(x); else x < 3;
     	final Parser parser = new Parser(Arrays.asList(new IfToken(), 
     												   new LeftParenToken(), 
-    												   new IntegerToken(1),
+    												   new IntegerVariable(1),
     												   new RightParenToken(),
-    												   new LeftCurlyToken(),
     												   new PrintToken(),
-    												   new SemiColonToken(),
-    												   new RightCurlyToken(),
-    												   new ElseToken(),
     												   new LeftParenToken(),
-    												   new IntegerToken(1),
+    												   new IdentifierToken("x"),
     												   new RightParenToken(),
-    												   new LeftCurlyToken(),
+    												   new SemiColonToken(),
+    												   new ElseToken(),
+    												   new IdentifierToken("x"),
+    												   new LessThanToken(),
+    												   new IntegerVariable(3),
+    												   new SemiColonToken()));
+        final Stmt expected = new IfStmt(new IntegerExp(1), 
+        								 new PrintStmt(new IdentifierExp(new Identifier("x"))), 
+        								 new ExpStmt(new OpExp(new IdentifierExp(new Identifier("x")),
+        										   			   new LessThanOp(),
+        										   			   new IntegerExp(3)))
+        								 );
+        assertEquals(new ParseResult<Stmt>(expected, 14), parser.parseStmt(0));
+    }
+    
+    @Test
+    public void testWhileStmts() throws ParseException{
+    	//while(x < 4) print(2);
+    	final Parser parser = new Parser(Arrays.asList(new WhileToken(),
+    												   new LeftParenToken(),
+    												   new IdentifierToken("x"),
+    												   new LessThanToken(),
+    												   new IntegerVariable(4),
+    												   new RightParenToken(),
     												   new PrintToken(),
+    												   new LeftParenToken(),
+    												   new IntegerVariable(2),
+    												   new RightParenToken(),
+    												   new SemiColonToken()));
+        final Stmt expected = new WhileStmt(new OpExp(new IdentifierExp(new Identifier("x")),
+        											  new LessThanOp(),
+        											  new IntegerExp(4)),
+        									new PrintStmt(new IntegerExp(2)));
+        assertEquals(new ParseResult<Stmt>(expected, 11), parser.parseStmt(0));
+    }
+    
+    @Test
+    public void testSingleBlockStmts() throws ParseException{
+    	//{ 1 - 2; }
+    	List<Stmt> stmts = new ArrayList();
+    	stmts.add(new ParseResult<Stmt>(new ExpStmt(new OpExp(new IntegerExp(1),
+    													  new MinusOp(),
+    													  new IntegerExp(2))), 
+    									3).result);
+    	final Parser parser = new Parser(Arrays.asList(new LeftCurlyToken(),
+    												   new IntegerVariable(1),
+    												   new MinusToken(),
+    												   new IntegerVariable(2),
     												   new SemiColonToken(),
     												   new RightCurlyToken()));
-        final Stmt expected = new IfStmt(new IfExp(), new PrintStmt(new IntegerExp(1)), 
-        															new PrintStmt(new IntegerExp(1)));
-        assertEquals(new ParseResult<Stmt>(expected, 16), parser.parseStmt(0));
-    }*/
+        final Stmt expected = new BlockStmt(stmts);
+        assertEquals(new ParseResult<Stmt>(expected, 6), parser.parseStmt(0));
+    }
     
-    /*@Test
-    public void testIfStmtsTrueBranch() throws ParseException{
-    	//if(1) 1 + 1 else 4 * 3
-    	final Parser parser = new Parser(Arrays.asList(new IfToken(), 
-    												   new LeftParenToken(), 
-    												   new IntegerToken(1),
-    												   new RightParenToken(),
-    												   new IntegerToken(1),
+    @Test
+    public void testPrintStmts() throws ParseException{
+    	//print((x + 1));
+    	final Parser parser = new Parser(Arrays.asList(new PrintToken(),
+    												   new LeftParenToken(),
+    												   new LeftParenToken(),
+    												   new IdentifierToken("x"),
     												   new AddToken(),
-    												   new IntegerToken(1),
-    												   new ElseToken(),
-    												   new IntegerToken(4),
-    												   new MultiplicationToken(),
-    												   new IntegerToken(3),
-    												   new LeftCurlyToken(),
-    												   new PrintToken(),
-    												   new SemiColonToken(),
-    												   new RightCurlyToken()));
-        final Stmt expected = new IfStmt(new IfExp(), new OpExp(new IntegerExp(1)), 
-        															new PrintStmt(new IntegerExp(1)));
-        assertEquals(new ParseResult<Stmt>(expected, 16), parser.parseStmt(0));
-    }*/
-
-    /*@Test
-    public void testOpExp() throws ParseException{
-    	final Exp first = new OpExp(new IntegerExp(3), 
-    									   new LessThanOp(),
-    									   new OpExp(new IntegerExp(4),
-    											   	 new AddOp(),
-    											   	 new IntegerExp(5)));
-    	assertEquals(first.equals(new OpExp(new IntegerExp(3), new LessThanOp(), new OpExp(new IntegerExp(4),
-    																			new AddOp(), new IntegerExp(5)))),
-    																			true);
-    }*/
-    
-   /* @Test
-    public void testBooleanStmts() throws ParseException{
-    	//if(
-    	final Parser parser = new Parser(Arrays.asList(new IfToken(), 
-    												   new LeftParenToken(), 
-    												   new BooleanToken(),
+    												   new IntegerVariable(1),
     												   new RightParenToken(),
-    												   new LeftCurlyToken(),
-    												   new ReturnToken(),
-    												   new SemiColonToken(),
-    												   new RightCurlyToken(),
-    												   new ElseToken(),
-    												   new LeftParenToken(),
     												   new RightParenToken(),
-    												   new LeftCurlyToken(),
-    												   new ReturnToken(),
-    												   new SemiColonToken(),
-    												   new RightCurlyToken()));
-        final Stmt expected = new IfStmt(new IfExp(), new PrintStmt(new IntegerExp(1)), 
-        															new PrintStmt(new IntegerExp(1)));
-        assertEquals(new ParseResult<Stmt>(expected, 15), parser.parseStmt(0));
-    }*/
+    												   new SemiColonToken()));
+        final Stmt expected = new PrintStmt(new OpExp(new IdentifierExp(new Identifier("x")),
+        											  new AddOp(),
+        											  new IntegerExp(1)));
+        assertEquals(new ParseResult<Stmt>(expected, 9), parser.parseStmt(0));
+    }
     
-    //parse program test exception
-    /*@Test(expected = ParseException.class)
-    public void testParserProgram() throws ParseException{
-    	final Parser parser = new Parser(Arrays.asList(new LeftCurlyToken(), new RightCurlyToken()));
-    	final Program expect = new Program(new BlockStmt(Arrays.asList(new BreakStmt(), new ReturnStmt());
-    	assertEquals(new ParseResult<Program>(expect, 1), parser.parseProgram());
-    }*/
+    @Test
+    public void testBreakStmts() throws ParseException{
+    	//break;
+    	final Parser parser = new Parser(Arrays.asList(new BreakToken(), 
+    												   new SemiColonToken()));
+        final Stmt expected = new BreakStmt();
+        assertEquals(new ParseResult<Stmt>(expected, 2), parser.parseStmt(0));
+    }
     
+    @Test
+    public void testVoidReturnStmts() throws ParseException{
+    	//return;
+    	final Parser parser = new Parser(Arrays.asList(new ReturnToken(), 
+    												   new SemiColonToken()));
+        final Stmt expected = new VoidReturnStmt();
+        assertEquals(new ParseResult<Stmt>(expected, 2), parser.parseStmt(0));
+    }
     
+    @Test
+    public void testReturnStmts() throws ParseException{
+    	//return 1;
+    	final Parser parser = new Parser(Arrays.asList(new ReturnToken(),
+    												   new IntegerVariable(1),
+    												   new SemiColonToken()));
+        final Stmt expected = new ReturnStmt(new IntegerExp(1));
+        assertEquals(new ParseResult<Stmt>(expected, 3), parser.parseStmt(0));
+    }
+    
+    @Test
+    public void testExpStmts() throws ParseException{
+    	//x;
+    	final Parser parser = new Parser(Arrays.asList(new IdentifierToken("x"), 
+    												   new SemiColonToken()));
+        final Stmt expected = new ExpStmt(new IdentifierExp(new Identifier("x")));
+        assertEquals(new ParseResult<Stmt>(expected, 2), parser.parseStmt(0));
+    }  
 }

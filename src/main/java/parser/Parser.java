@@ -18,14 +18,6 @@ public class Parser {
         } 
     }
     
-    /*public Type getType(final int position) throws ParseException{
-    	if(position >= 0 && position < type.size()) {
-    		return type.get(position);
-    	}else {
-    		throw new ParseException("Invalid type position: " + position);
-    	}
-    }*/
-    
     public void assertTokenHereIs(final int position, final Token expected) throws ParseException {
         final Token received = getToken(position);
         
@@ -339,19 +331,15 @@ public class Parser {
             return new ParseResult<Stmt>(new IfStmt(guard.result,
                                                     trueBranch.result,
                                                     falseBranch.result),
-                                         falseBranch.position);
-            
+                                         falseBranch.position);    
         } else if (token instanceof WhileToken){
         	assertTokenHereIs(position + 1, new LeftParenToken());
         	final ParseResult<Exp> guard = parseExp(position + 2);
         	assertTokenHereIs(guard.position, new RightParenToken());
         	final ParseResult<Stmt> stmtBranch = parseStmt(guard.position + 1);
-        	assertTokenHereIs(stmtBranch.position, new BreakToken());
         	return new ParseResult<Stmt>(new WhileStmt(guard.result, 
         											   stmtBranch.result), 
         								 stmtBranch.position);
-        	
-        	
         } else if (token instanceof LeftCurlyToken) {
             final List<Stmt> stmts = new ArrayList<Stmt>();
             int curPosition = position + 1;
@@ -365,24 +353,8 @@ public class Parser {
                     shouldRun = false;
                 }
             }
-            return new ParseResult<Stmt>(new BlockStmt(stmts),
-                                         curPosition);
-            
-        } else if(token instanceof RightCurlyToken) {
-        	final List<Stmt> stmts = new ArrayList<Stmt>();
-        	int curPosition = position + 1;
-        	boolean shouldRun = true;
-        	while(shouldRun) {
-        		try {
-        			final ParseResult<Stmt> stmt = parseStmt(curPosition);
-        			stmts.add(stmt.result);
-        			curPosition = stmt.position;
-        		} catch(final ParseException e) {
-        			shouldRun = false;
-        		}
-        	}
-        	return new ParseResult<Stmt>(new BlockStmt(stmts), curPosition);
-        	
+            assertTokenHereIs(curPosition, new RightCurlyToken());
+            return new ParseResult<Stmt>(new BlockStmt(stmts), curPosition + 1);
         } else if (token instanceof PrintToken) {
             assertTokenHereIs(position + 1, new LeftParenToken());
             final ParseResult<Exp> exp = parseExp(position + 2);
@@ -390,38 +362,30 @@ public class Parser {
             assertTokenHereIs(exp.position + 1, new SemiColonToken());
             return new ParseResult<Stmt>(new PrintStmt(exp.result),
                                          exp.position + 2);
-            
         } else if (token instanceof BreakToken) { //break;
         	assertTokenHereIs(position + 1, new SemiColonToken());
-			final ParseResult<Stmt> stmt = parseStmt(position + 2);
-			assertTokenHereIs(stmt.position + 1, new SemiColonToken());
-			return new ParseResult<Stmt>(new BreakStmt(stmt.result), position);
-		
+			return new ParseResult<Stmt>(new BreakStmt(), position + 2);
 		} else if (token instanceof ReturnToken) { //return;
-			assertTokenHereIs(position + 1, new SemiColonToken());
-			final ParseResult<Exp> exp = parseExp(position + 2);
-			assertTokenHereIs(exp.position + 1, new SemiColonToken());
-			return new ParseResult<Stmt>(new ReturnStmt(exp.result), position);
-		
+			if(tokens.size() > position + 1) {
+				final Token semiColonToken = getToken(position + 1);
+				if(semiColonToken instanceof SemiColonToken) {
+					return new ParseResult<Stmt>(new VoidReturnStmt(), position + 2);
+				} else {
+					final ParseResult<Exp> exp = parseExp(position + 1);
+					assertTokenHereIs(exp.position, new SemiColonToken());
+					return new ParseResult<Stmt>(new ReturnStmt(exp.result), exp.position + 1);
+				}
+			} else {
+				throw new ParseException("expected return statement but there are no more tokens");
+			}
+		} else if(token instanceof MultiplicationToken || token instanceof AddressToken ||
+				  token instanceof IdentifierToken || token instanceof IntegerVariable ||
+				  token instanceof LeftParenToken) {
+			final ParseResult<Exp> exp = parseExp(position);
+			assertTokenHereIs(exp.position, new SemiColonToken());
+			return new ParseResult<Stmt>(new ExpStmt(exp.result), exp.position + 1);
 		} else {
             throw new ParseException("expected statement; received: " + token);
-        }
-    }
-	
-	//parse program
-    public ParseResult<Program> parseProgram(final int position) throws ParseException {
-        final ParseResult<Stmt> stmt = parseStmt(position);
-        return new ParseResult<Program>(new Program(stmt.result),
-                                        stmt.position);
-	}
-	
-	public Program parseProgram() throws ParseException {
-        final ParseResult<Program> program = parseProgram(0);
-      
-        if (program.position == tokens.size()) {
-            return program.result;
-        } else {
-            throw new ParseException("Remaining tokens at end");
         }
     }
 	
@@ -517,5 +481,22 @@ public class Parser {
     
     public ParseResult<Type> parseType(final int position) throws ParseException{
     	return parsePointerType(position);
+    }
+    
+  //parse program
+    public ParseResult<Program> parseProgram(final int position) throws ParseException {
+        final ParseResult<Stmt> stmt = parseStmt(position);
+        return new ParseResult<Program>(new Program(stmt.result),
+                                        stmt.position);
+	}
+	
+	public Program parseProgram() throws ParseException {
+        final ParseResult<Program> program = parseProgram(0);
+      
+        if (program.position == tokens.size()) {
+            return program.result;
+        } else {
+            throw new ParseException("Remaining tokens at end");
+        }
     }
 }
