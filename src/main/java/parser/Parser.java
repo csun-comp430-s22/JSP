@@ -31,26 +31,32 @@ public class Parser {
     	if(tokens.size() > position) {
 			final Token callToken = getToken(position);
 			if(callToken instanceof LeftParenToken) {
-				final List paramsList = new ArrayList();
-				ParseResult<Exp> parameter = new ParseResult<Exp>(null, position + 1);
-	 			boolean shouldRun = true;
-	 	        while(shouldRun) {
-	 	        	try {
-	 	        		Token commaToken = getToken(parameter.position);
-	 	        		if(commaToken instanceof CommaToken) {
-	 	        			parameter = parseExp(parameter.position + 1);
-		 	        		paramsList.add(parameter);
-	 	        		} else {
-	 	        			parameter = parseExp(parameter.position);
-		 	        		paramsList.add(parameter);
-	 	        		}
-	 	        	} catch(final ParseException e) {
-	 	        		shouldRun = false;
-	 	        	}
-	 	        }
-	 	        assertTokenHereIs(parameter.position, new RightParenToken());
-	 	        paramsList.add(parameter.position + 1);
-	 	        return paramsList;
+				final Token typeToken = getToken(position + 1);
+				if(typeToken instanceof IntToken || typeToken instanceof BooleanToken ||
+				   typeToken instanceof VoidToken || typeToken instanceof StructNameToken) {
+					return null;
+				} else {
+					final List paramsList = new ArrayList();
+					ParseResult<Exp> parameter = new ParseResult<Exp>(null, position + 1);
+		 			boolean shouldRun = true;
+		 	        while(shouldRun) {
+		 	        	try {
+		 	        		Token commaToken = getToken(parameter.position);
+		 	        		if(commaToken instanceof CommaToken) {
+		 	        			parameter = parseExp(parameter.position + 1);
+			 	        		paramsList.add(parameter);
+		 	        		} else {
+		 	        			parameter = parseExp(parameter.position);
+			 	        		paramsList.add(parameter);
+		 	        		}
+		 	        	} catch(final ParseException e) {
+		 	        		shouldRun = false;
+		 	        	}
+		 	        }
+		 	        assertTokenHereIs(parameter.position, new RightParenToken());
+		 	        paramsList.add(parameter.position + 1);
+		 	        return paramsList;
+				}
 	 		} else {
 	 			return null;
 	 		}
@@ -562,12 +568,60 @@ public class Parser {
   			}
   		}
     }
+  	
+  	public ParseResult<Functiondef> parseFunctiondef(final int position) throws ParseException {
+        final ParseResult<Type> returnType = parseType(position);
+        final Token token = getToken(returnType.position);
+        if(token instanceof IdentifierToken) {
+        	final ParseResult<Exp> functionname = parsePrimaryExp(returnType.position);
+        	assertTokenHereIs(functionname.position, new LeftParenToken());
+        	List<Vardec> parameters = new ArrayList<Vardec>();
+        	int curPosition = functionname.position + 1;
+        	boolean shouldRun = true;
+            while (shouldRun) {
+                try {
+                    Token commaToken = getToken(curPosition);
+		 	        if(commaToken instanceof CommaToken) {
+		 	        	final ParseResult<Vardec> param = parseVardec(curPosition + 1);
+	                    parameters.add(param.result);
+	                    curPosition = param.position;
+		 	        } else {
+		 	        	final ParseResult<Vardec> param = parseVardec(curPosition);
+	                    parameters.add(param.result);
+	                    curPosition = param.position;
+		 	        }
+                } catch (final ParseException e) {
+                    shouldRun = false;
+                }
+            }
+            assertTokenHereIs(curPosition, new RightParenToken());
+            final ParseResult<Stmt> body = parseStmt(curPosition + 1);
+            return new ParseResult<Functiondef>(new FunctionDefinition(returnType.result, 
+            														   functionname.result, 
+            														   parameters, 
+            														   body.result),
+                    							body.position);
+        } else {
+        	throw new ParseException("expected identifier; recieved: " + token);
+        }
+	}
     
   //parse program
     public ParseResult<Program> parseProgram(final int position) throws ParseException {
-        final ParseResult<Stmt> stmt = parseStmt(position);
-        return new ParseResult<Program>(new Program(stmt.result),
-                                        stmt.position);
+        final List<Functiondef> functiondefs = new ArrayList<Functiondef>();
+        int curPosition = position;
+        boolean shouldRun = true;
+        while (shouldRun) {
+            try {
+	 	        final ParseResult<Functiondef> funcdef = parseFunctiondef(curPosition);
+                functiondefs.add(funcdef.result);
+                curPosition = funcdef.position;
+            } catch (final ParseException e) {
+                shouldRun = false;
+            }
+        }
+        return new ParseResult<Program>(new Program(functiondefs),
+                                        curPosition);
 	}
 	
 	public Program parseProgram() throws ParseException {
