@@ -5,27 +5,28 @@ import parser.*;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
+
 import java.util.HashMap;
 
 public class Typechecker{
 	public final Program program;
 	
-	public final Map<FunctionName, Funcdef> functions;
+	public final Map<FunctionName, Functiondef> functions;
 	
 	public Typechecker(final Program program) throws TypeErrorException {
         this.program = program;
-        functions = new HashMap<FunctionName, Funcdef>();
-        for (final Funcdef fdef : program.functions) {
-            if (!functions.containsKey(fdef.fname)) {
-                functions.put(fdef.fname, fdef);
+        functions = new HashMap<FunctionName, Functiondef>();
+        for (final Functiondef functiondef : program.functions) {
+            if (!functions.containsKey(functiondef.fname)) {
+                functions.put(functiondef.fname, functiondef);
             } else {
-                throw new TypeErrorException("Function with duplicate name: " + fdef.fname);
+                throw new TypeErrorException("Function with duplicate name: " + functiondef.fname);
             }
         }
     }
 	
-	public Funcdef getFunctionByName(final FunctionName fname) throws TypeErrorException{
-		final Funcdef fdef = functions.get(fname);
+	public Functiondef getFunctionByName(final FunctionName fname) throws TypeErrorException{
+		final Functiondef fdef = functions.get(fname);
 		if(fdef == null) {
 			throw new TypeErrorException("No such function with name: " + fname);
 		}else {
@@ -34,7 +35,7 @@ public class Typechecker{
 	}
 	
 	public Type typeofFunctionCall(final FunctionCallExp exp, final Map<Identifier, Type> typeEnviornment) throws TypeErrorException{
-		final Funcdef fdef = getFunctionByName(exp.fname);
+		final Functiondef fdef = getFunctionByName(exp.fname);
 		if(exp.params.size() != fdef.arguments.size()) {
 			throw new TypeErrorException("Wrong number of arguments for function: " + fdef.fname);
 		}
@@ -121,11 +122,11 @@ public class Typechecker{
 			return new BoolType();
 		}else if(exp instanceof VoidLiteralExp) {
 			return new VoidType();
-		}else if(exp instanceof StructNameLiteralExp) {
+		}/*else if(exp instanceof StructNameLiteralExp) {
 			return new StructNameType();
 		}else if(exp instanceof IntegerLiteralExp) {
 			return new IntType();
-		}else if(exp instanceof IdentifierExp) {
+		}*/else if(exp instanceof IdentifierExp) {
 			final Identifier identifier = ((IdentifierExp)exp).identifier;
 			final Type identifierType = typeEnviornment.get(identifier);
 			
@@ -226,4 +227,4 @@ public class Typechecker{
 			throw new TypeErrorException("Unsoupported statement: " + stmt);
 		}
 	}
-}	
+}
