@@ -616,4 +616,102 @@ public class ParserTest {
         final Stmt expected = new ExpStmt(new IdentifierExp(new Identifier("x")));
         assertEquals(new ParseResult<Stmt>(expected, 2), parser.parseStmt(0));
     }  
+    
+    @Test
+    public void testVardecStmts() throws ParseException{
+    	//int x;
+    	final Parser parser = new Parser(Arrays.asList(new IntToken(), 
+				   									   new IdentifierToken("x"),
+				   									   new SemiColonToken()));
+    	final Stmt expected = new VardecStmt(new Vardec(new IntType(), new Identifier("x")));
+        assertEquals(new ParseResult<Stmt>(expected, 3), parser.parseStmt(0));
+    } 
+    
+    @Test
+    public void testLhsStmts() throws ParseException{
+    	//x = 1 + 2;
+    	final Parser parser = new Parser(Arrays.asList(new IdentifierToken("x"),
+    												   new AssignmentToken(),
+    												   new IntegerVariable(1),
+    												   new AddToken(),
+    												   new IntegerVariable(2),
+    												   new SemiColonToken()));
+        final Stmt expected = new LhsStmt(new IdentifierLhs(new IdentifierExp(new Identifier("x"))),
+        								  new OpExp(new IntegerExp(1),
+        										    new AddOp(),
+        										    new IntegerExp(2)));
+        assertEquals(new ParseResult<Stmt>(expected, 6), parser.parseStmt(0));
+    } 
+    
+    @Test
+    public void testVardec() throws ParseException{
+    	//int x
+    	final Parser parser = new Parser(Arrays.asList(new IntToken(), 
+    												   new IdentifierToken("x")));
+        final Vardec expected = new Vardec(new IntType(), new Identifier("x"));
+        assertEquals(new ParseResult<Vardec>(expected, 2), parser.parseVardec(0));
+    } 
+    
+    @Test
+    public void testPrimaryLhsIdentifier() throws ParseException{
+    	//x
+    	final List<Token> singleIdentifierToken = createTokenArrayList(new IdentifierToken("x"));
+		final Parser parser = new Parser(singleIdentifierToken);
+        final Lhs expected = new IdentifierLhs(new IdentifierExp(new Identifier("x")));
+        assertEquals(new ParseResult<Lhs>(expected, 1), parser.parsePrimaryLhs(0));
+    } 
+    
+    @Test
+    public void testPrimaryLhsPointer() throws ParseException{
+    	//*x
+    	final Parser parser = new Parser(Arrays.asList(new MultiplicationToken(), 
+				   									   new IdentifierToken("x")));
+        final Lhs expected = new PointerLhs(new PointerLhsOp(), 
+        									new IdentifierLhs(new IdentifierExp(new Identifier("x"))));
+        assertEquals(new ParseResult<Lhs>(expected, 2), parser.parsePrimaryLhs(0));
+    } 
+    
+    @Test
+    public void testSingleIdentifierFieldLhs() throws ParseException{
+    	//x.y
+    	final Parser parser = new Parser(Arrays.asList(new IdentifierToken("x"),
+    												   new PeriodToken(),
+				   									   new IdentifierToken("y")));
+        final Lhs expected = new FieldLhs(new IdentifierLhs(new IdentifierExp(new Identifier("x"))),
+        								  new FieldOp(),
+        								  new IdentifierLhs(new IdentifierExp(new Identifier("y"))));
+        assertEquals(new ParseResult<Lhs>(expected, 3), parser.parseFieldLhs(0));
+    } 
+    
+    @Test
+    public void testSinglePointerFieldLhs() throws ParseException{
+    	//*x.y
+    	final Parser parser = new Parser(Arrays.asList(new MultiplicationToken(),
+    												   new IdentifierToken("x"),
+    												   new PeriodToken(),
+				   									   new IdentifierToken("y")));
+        final Lhs expected = new FieldLhs(new PointerLhs(new PointerLhsOp(), 
+        												 new IdentifierLhs(new IdentifierExp(new Identifier("x")))),
+        								  new FieldOp(),
+        								  new IdentifierLhs(new IdentifierExp(new Identifier("y"))));
+        assertEquals(new ParseResult<Lhs>(expected, 4), parser.parseFieldLhs(0));
+    } 
+    
+    @Test
+    public void testPointerMultiFieldLhs() throws ParseException{
+    	//*x.y.z
+    	final Parser parser = new Parser(Arrays.asList(new MultiplicationToken(),
+    												   new IdentifierToken("x"),
+    												   new PeriodToken(),
+				   									   new IdentifierToken("y"),
+				   									   new PeriodToken(),
+				   									   new IdentifierToken("z")));
+        final Lhs expected = new FieldLhs(new PointerLhs(new PointerLhsOp(), 
+        												 new IdentifierLhs(new IdentifierExp(new Identifier("x")))),
+					 					  new FieldOp(),
+					 					  new FieldLhs(new IdentifierLhs(new IdentifierExp(new Identifier("y"))),
+					 							  	   new FieldOp(),
+					 							  	   new IdentifierLhs(new IdentifierExp(new Identifier("z")))));
+        assertEquals(new ParseResult<Lhs>(expected, 6), parser.parseFieldLhs(0));
+    }
 }

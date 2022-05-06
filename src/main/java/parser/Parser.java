@@ -316,78 +316,6 @@ public class Parser {
     public ParseResult<Exp> parseExp(final int position) throws ParseException {
     	return parseEqualsExp(position);
     }
-    
-    //parse stmt
-	public ParseResult<Stmt> parseStmt(final int position) throws ParseException {
-        final Token token = getToken(position);
-		
-        if (token instanceof IfToken) {
-            assertTokenHereIs(position + 1, new LeftParenToken());
-            final ParseResult<Exp> guard = parseExp(position + 2);
-            assertTokenHereIs(guard.position, new RightParenToken());
-            final ParseResult<Stmt> trueBranch = parseStmt(guard.position + 1);
-            assertTokenHereIs(trueBranch.position, new ElseToken());
-            final ParseResult<Stmt> falseBranch = parseStmt(trueBranch.position + 1);
-            return new ParseResult<Stmt>(new IfStmt(guard.result,
-                                                    trueBranch.result,
-                                                    falseBranch.result),
-                                         falseBranch.position);    
-        } else if (token instanceof WhileToken){
-        	assertTokenHereIs(position + 1, new LeftParenToken());
-        	final ParseResult<Exp> guard = parseExp(position + 2);
-        	assertTokenHereIs(guard.position, new RightParenToken());
-        	final ParseResult<Stmt> stmtBranch = parseStmt(guard.position + 1);
-        	return new ParseResult<Stmt>(new WhileStmt(guard.result, 
-        											   stmtBranch.result), 
-        								 stmtBranch.position);
-        } else if (token instanceof LeftCurlyToken) {
-            final List<Stmt> stmts = new ArrayList<Stmt>();
-            int curPosition = position + 1;
-            boolean shouldRun = true;
-            while (shouldRun) {
-                try {
-                    final ParseResult<Stmt> stmt = parseStmt(curPosition);
-                    stmts.add(stmt.result);
-                    curPosition = stmt.position;
-                } catch (final ParseException e) {
-                    shouldRun = false;
-                }
-            }
-            assertTokenHereIs(curPosition, new RightCurlyToken());
-            return new ParseResult<Stmt>(new BlockStmt(stmts), curPosition + 1);
-        } else if (token instanceof PrintToken) {
-            assertTokenHereIs(position + 1, new LeftParenToken());
-            final ParseResult<Exp> exp = parseExp(position + 2);
-            assertTokenHereIs(exp.position, new RightParenToken());
-            assertTokenHereIs(exp.position + 1, new SemiColonToken());
-            return new ParseResult<Stmt>(new PrintStmt(exp.result),
-                                         exp.position + 2);
-        } else if (token instanceof BreakToken) { //break;
-        	assertTokenHereIs(position + 1, new SemiColonToken());
-			return new ParseResult<Stmt>(new BreakStmt(), position + 2);
-		} else if (token instanceof ReturnToken) { //return;
-			if(tokens.size() > position + 1) {
-				final Token semiColonToken = getToken(position + 1);
-				if(semiColonToken instanceof SemiColonToken) {
-					return new ParseResult<Stmt>(new VoidReturnStmt(), position + 2);
-				} else {
-					final ParseResult<Exp> exp = parseExp(position + 1);
-					assertTokenHereIs(exp.position, new SemiColonToken());
-					return new ParseResult<Stmt>(new ReturnStmt(exp.result), exp.position + 1);
-				}
-			} else {
-				throw new ParseException("expected return statement but there are no more tokens");
-			}
-		} else if(token instanceof MultiplicationToken || token instanceof AddressToken ||
-				  token instanceof IdentifierToken || token instanceof IntegerVariable ||
-				  token instanceof LeftParenToken) {
-			final ParseResult<Exp> exp = parseExp(position);
-			assertTokenHereIs(exp.position, new SemiColonToken());
-			return new ParseResult<Stmt>(new ExpStmt(exp.result), exp.position + 1);
-		} else {
-            throw new ParseException("expected statement; received: " + token);
-        }
-    }
 	
 	public List getArgs(final int position) throws ParseException {
 		final List argsList = new ArrayList();
@@ -421,6 +349,59 @@ public class Parser {
 			throw new ParseException("expected arguments or RightParenToken but there are no more tokens");
 		}
      }
+	
+	public ParseResult<Op> parsePointerLhsOp(final int position) throws ParseException{
+		return new ParseResult<Op>(new PointerLhsOp(), position + 1);
+    }
+	
+	public ParseResult<Lhs> parsePrimaryLhs(final int position) throws ParseException {
+		final Token lhsToken = getToken(position);
+		if(lhsToken instanceof MultiplicationToken) {
+			final ParseResult<Op> pointerLhsOp = parsePointerLhsOp(position);
+			final ParseResult<Lhs> lhs = parsePrimaryLhs(pointerLhsOp.position);
+			return new ParseResult<Lhs>(new PointerLhs(pointerLhsOp.result,
+													   lhs.result), 
+										lhs.position);
+		} else if(lhsToken instanceof IdentifierToken) {
+			final ParseResult<Exp> identifier = parsePrimaryExp(position);
+			return new ParseResult<Lhs>(new IdentifierLhs(identifier.result), position + 1);
+		} else {
+			throw new ParseException("expected primaryLhs; recieved: " + lhsToken);
+		}
+	}
+	
+	public ParseResult<Op> parseFieldOp(final int position) throws ParseException{
+    	final Token token = getToken(position);
+    	
+    	if(token instanceof PeriodToken) {
+    		return new ParseResult<Op>(new FieldOp(), position + 1);
+    	} else {
+    		throw new ParseException("expected . token; recieved: " + token);
+    	}
+    }
+	
+	public ParseResult<Lhs> parseFieldLhs(final int position) throws ParseException{
+		ParseResult<Lhs> current = parsePrimaryLhs(position);
+		boolean shouldRun = true;
+		
+		while(shouldRun) {
+			try {
+				final ParseResult<Op> fieldOp = parseFieldOp(current.position);
+				final ParseResult<Lhs> field = parseLhs(fieldOp.position);
+    			current = new ParseResult<Lhs>(new FieldLhs(current.result,
+    														fieldOp.result,
+    														field.result),
+    										   field.position);
+			} catch (final ParseException e) {
+				shouldRun = false;
+			}
+		}
+    	return current;
+    }
+	
+	public ParseResult<Lhs> parseLhs(final int position) throws ParseException {
+    	return parseFieldLhs(position);
+    }
 	
     public ParseResult<Type> parsePrimaryType(final int position) throws ParseException{
     	final Token type = getToken(position);
@@ -481,6 +462,105 @@ public class Parser {
     
     public ParseResult<Type> parseType(final int position) throws ParseException{
     	return parsePointerType(position);
+    }
+    
+    public ParseResult<Vardec> parseVardec(final int position) throws ParseException{
+		final ParseResult<Type> type = parseType(position);
+		final Token token = getToken(type.position);
+		if(token instanceof IdentifierToken) {
+			final String name = ((IdentifierToken)token).name;
+			return new ParseResult<Vardec>(new Vardec(type.result, 
+													 new Identifier(name)), 
+										   type.position + 1);
+		} else {
+			throw new ParseException("expected identifier; recieved: " + token);
+		}
+	}
+    
+  //parse stmt
+  	public ParseResult<Stmt> parseStmt(final int position) throws ParseException {
+          final Token token = getToken(position);
+  		
+          if (token instanceof IfToken) {
+              assertTokenHereIs(position + 1, new LeftParenToken());
+              final ParseResult<Exp> guard = parseExp(position + 2);
+              assertTokenHereIs(guard.position, new RightParenToken());
+              final ParseResult<Stmt> trueBranch = parseStmt(guard.position + 1);
+              assertTokenHereIs(trueBranch.position, new ElseToken());
+              final ParseResult<Stmt> falseBranch = parseStmt(trueBranch.position + 1);
+              return new ParseResult<Stmt>(new IfStmt(guard.result,
+                                                      trueBranch.result,
+                                                      falseBranch.result),
+                                           falseBranch.position);    
+          } else if (token instanceof WhileToken){
+          	assertTokenHereIs(position + 1, new LeftParenToken());
+          	final ParseResult<Exp> guard = parseExp(position + 2);
+          	assertTokenHereIs(guard.position, new RightParenToken());
+          	final ParseResult<Stmt> stmtBranch = parseStmt(guard.position + 1);
+          	return new ParseResult<Stmt>(new WhileStmt(guard.result, 
+          											   stmtBranch.result), 
+          								 stmtBranch.position);
+          } else if (token instanceof LeftCurlyToken) {
+              final List<Stmt> stmts = new ArrayList<Stmt>();
+              int curPosition = position + 1;
+              boolean shouldRun = true;
+              while (shouldRun) {
+                  try {
+                      final ParseResult<Stmt> stmt = parseStmt(curPosition);
+                      stmts.add(stmt.result);
+                      curPosition = stmt.position;
+                  } catch (final ParseException e) {
+                      shouldRun = false;
+                  }
+              }
+              assertTokenHereIs(curPosition, new RightCurlyToken());
+              return new ParseResult<Stmt>(new BlockStmt(stmts), curPosition + 1);
+          } else if (token instanceof PrintToken) {
+              assertTokenHereIs(position + 1, new LeftParenToken());
+              final ParseResult<Exp> exp = parseExp(position + 2);
+              assertTokenHereIs(exp.position, new RightParenToken());
+              assertTokenHereIs(exp.position + 1, new SemiColonToken());
+              return new ParseResult<Stmt>(new PrintStmt(exp.result),
+                                           exp.position + 2);
+          } else if (token instanceof BreakToken) { //break;
+          	assertTokenHereIs(position + 1, new SemiColonToken());
+  			return new ParseResult<Stmt>(new BreakStmt(), position + 2);
+  		} else if (token instanceof ReturnToken) { //return;
+  			if(tokens.size() > position + 1) {
+  				final Token semiColonToken = getToken(position + 1);
+  				if(semiColonToken instanceof SemiColonToken) {
+  					return new ParseResult<Stmt>(new VoidReturnStmt(), position + 2);
+  				} else {
+  					final ParseResult<Exp> exp = parseExp(position + 1);
+  					assertTokenHereIs(exp.position, new SemiColonToken());
+  					return new ParseResult<Stmt>(new ReturnStmt(exp.result), exp.position + 1);
+  				}
+  			} else {
+  				throw new ParseException("expected return statement but there are no more tokens");
+  			}
+  		} else {
+  			try {
+  				final ParseResult<Exp> exp = parseExp(position);
+		  			assertTokenHereIs(exp.position, new SemiColonToken());
+		  			return new ParseResult<Stmt>(new ExpStmt(exp.result), exp.position + 1);
+  			} catch (final ParseException e) {
+  				try {
+  					final ParseResult<Vardec> vardec = parseVardec(position);
+			  			assertTokenHereIs(vardec.position, new SemiColonToken());
+			  			return new ParseResult<Stmt>(new VardecStmt(vardec.result), vardec.position + 1);
+  				} catch (final ParseException f) {
+  					try {
+  						final ParseResult<Lhs> lhs = parseLhs(position);
+  			  			assertTokenHereIs(lhs.position, new AssignmentToken());
+  			  			final ParseResult<Exp> exp = parseExp(lhs.position + 1);
+  			  			assertTokenHereIs(exp.position, new SemiColonToken());
+  			  			return new ParseResult<Stmt>(new LhsStmt(lhs.result, exp.result), exp.position + 1);
+  					} catch (final ParseException g) {
+  						throw new ParseException("expected statement but could not parse");
+  					}
+  				}
+  			}
+  		}
     }
     
   //parse program
