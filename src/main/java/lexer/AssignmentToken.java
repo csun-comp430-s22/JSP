@@ -1,16 +1,15 @@
 package lexer;
 
-public class VoidToken implements Token {
+public class AssignmentToken implements Token {
 	public boolean equals(final Object other) {
-        return other instanceof VoidToken;
+        return other instanceof AssignmentToken;
     }
 
     public int hashCode() {
-        return 27;
+        return 29;
     }
 
     public String toString() {
-        return "void";
+        return "=";
     }
-
 }

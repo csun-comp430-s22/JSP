@@ -10,7 +10,7 @@ public class BooleanToken implements Token{
 	}
 	
 	public String toString() {
-		return "Bool";
+		return "boolean";
 		
 	}
 }

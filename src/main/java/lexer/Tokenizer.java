@@ -39,6 +39,29 @@ public class Tokenizer {
         }
     }
     
+    public Token tryTokenizeStructName() {
+    	skipWhitespace();
+    	String name = "";
+
+        //read characters individually
+        //first variable char is a capital letter
+        //followed by letter or integer
+        if (offset < input.length() &&
+        	Character.isUpperCase(input.charAt(offset))) {
+            name += input.charAt(offset);
+            offset++;
+
+            while (offset < input.length() &&
+                   Character.isLetterOrDigit(input.charAt(offset))) {
+                name += input.charAt(offset);
+                offset++;
+            }
+            return new StructNameToken(name);
+        } else {
+        	return null;
+        }
+    }
+    
     // returns null if no variable or keyword
     public Token tryTokenizeIdentifierOrKeyword() {
         skipWhitespace();
@@ -49,7 +72,7 @@ public class Tokenizer {
         //first variable char is a letter
         //followed by letter or integer
         if (offset < input.length() &&
-            Character.isLetter(input.charAt(offset))) {
+        	Character.isLowerCase(input.charAt(offset))) {
             name += input.charAt(offset);
             offset++;
 
@@ -76,11 +99,11 @@ public class Tokenizer {
             	return new WhileToken();
             } else if(name.equals("print")) {
             	return new PrintToken();
-            } else if(name.equals("Int")) {
+            } else if(name.equals("int")) {
             	return new IntToken();
-            } else if(name.equals("Boolean")) {
+            } else if(name.equals("boolean")) {
             	return new BooleanToken();
-            } else if(name.equals("Void")) {
+            } else if(name.equals("void")) {
             	return new VoidToken();
             } else if(name.equals("struct")) {
             	return new StructToken();
@@ -130,9 +153,15 @@ public class Tokenizer {
         } else if (input.startsWith("<", offset)) {
         	offset += 1;
         	val = new LessThanToken();
+        } else if (input.startsWith("=>", offset)) {
+        	offset += 2;
+        	val = new FunctionPointerToken();
         } else if (input.startsWith("==", offset)) {
         	offset += 2;
         	val = new EqualsToToken();
+        } else if(input.startsWith("=", offset)) {
+        	offset += 1;
+        	val = new AssignmentToken();
         } else if (input.startsWith(".", offset)) {
         	offset += 1;
         	val = new PeriodToken();
@@ -152,6 +181,7 @@ public class Tokenizer {
         Token retval = null;
         skipWhitespace();
         if (offset < input.length() &&
+        	(retval = tryTokenizeStructName()) == null &&
             (retval = tryTokenizeIdentifierOrKeyword()) == null &&
             (retval = tryTokenizeInteger()) == null &&
             (retval = tryTokenizeSymbol()) == null) {

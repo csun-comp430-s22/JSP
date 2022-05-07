@@ -73,17 +73,17 @@ public class TokenizerTest {
 	
 	@Test
 	public void testIntByItself() throws TokenizerException {
-		assertTokenizes("Int", new Token[] { new IntToken()});
+		assertTokenizes("int", new Token[] { new IntToken()});
 	}
 	
 	@Test
 	public void testBooleanByItself() throws TokenizerException {
-		assertTokenizes("Boolean", new Token[] { new BooleanToken()});
+		assertTokenizes("boolean", new Token[] { new BooleanToken()});
 	}
 	
 	@Test
 	public void testVoidByItself() throws TokenizerException {
-		assertTokenizes("Void", new Token[] { new VoidToken()});
+		assertTokenizes("void", new Token[] { new VoidToken()});
 	}
 	
 	@Test
@@ -105,6 +105,21 @@ public class TokenizerTest {
 	@Test
 	public void testMultiDigitInteger() throws TokenizerException {
 		assertTokenizes("123", new Token[] { new IntegerVariable(123) });
+	}
+	
+	@Test
+	public void testStructName() throws TokenizerException {
+		assertTokenizes("MyStruct", new Token[] { new StructNameToken("MyStruct") });
+	}
+	
+	@Test
+	public void testIdentifierAllLowercase() throws TokenizerException {
+		assertTokenizes("foo", new Token[] { new IdentifierToken("foo") });
+	}
+	
+	@Test
+	public void testIdentifierWithUppercase() throws TokenizerException {
+		assertTokenizes("fooBar", new Token[] { new IdentifierToken("fooBar") });
 	}
 	
 	@Test
@@ -181,5 +196,14 @@ public class TokenizerTest {
 	public void testAddress() throws TokenizerException {
 		assertTokenizes("&", new Token[] { new AddressToken() });
 	}
-
+	
+	@Test
+	public void testFunctionPointer() throws TokenizerException {
+		assertTokenizes("=>", new Token[] { new FunctionPointerToken() });
+	}
+	
+	@Test
+	public void testAssignment() throws TokenizerException {
+		assertTokenizes("=", new Token[] { new AssignmentToken() });
+	}
 }

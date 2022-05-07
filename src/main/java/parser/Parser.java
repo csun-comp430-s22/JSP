@@ -120,6 +120,10 @@ public class Parser {
     	} else if(token instanceof IntegerVariable) {
     		final int value = ((IntegerVariable)token).value;
     		return new ParseResult<Exp>(new IntegerExp(value), position + 1);
+    	} else if(token instanceof TrueToken) {
+    		return new ParseResult<Exp>(new BooleanLiteralExp(true), position + 1);
+    	} else if(token instanceof FalseToken) {
+    		return new ParseResult<Exp>(new BooleanLiteralExp(false), position + 1);
     	} else if(token instanceof LeftParenToken) {
     		final ParseResult<Exp> inParens = parseExp(position + 1);
     		assertTokenHereIs(inParens.position, new RightParenToken());
@@ -575,7 +579,7 @@ public class Parser {
         if(token instanceof IdentifierToken) {
         	final ParseResult<Exp> functionname = parsePrimaryExp(returnType.position);
         	assertTokenHereIs(functionname.position, new LeftParenToken());
-        	List<Vardec> parameters = new ArrayList<Vardec>();
+        	final List<Vardec> parameters = new ArrayList<Vardec>();
         	int curPosition = functionname.position + 1;
         	boolean shouldRun = true;
             while (shouldRun) {
@@ -605,22 +609,84 @@ public class Parser {
         	throw new ParseException("expected identifier; recieved: " + token);
         }
 	}
+  	
+  	public ParseResult<Structdec> parseStructdec(final int position) throws ParseException {
+  		final Token token = getToken(position);
+  		if(token instanceof StructToken) {
+  			final Token structNameToken = getToken(position + 1);
+  			if(structNameToken instanceof StructNameToken) {
+  				//Parse the name of the structure as a type
+  				final ParseResult<Type> structName = parseType(position + 1);
+  				assertTokenHereIs(structName.position, new LeftCurlyToken());
+  				//Checking if the structure has variable declarations
+  				final List<Vardec> vardecs = new ArrayList<Vardec>();
+  	        	int curPosition = structName.position + 1;
+  	        	boolean shouldRunVardecs = true;
+  	            while (shouldRunVardecs) {
+  	                try {
+  	                	final ParseResult<Vardec> singleVardec = parseVardec(curPosition);
+			 	        	assertTokenHereIs(singleVardec.position, new SemiColonToken());
+	  		                vardecs.add(singleVardec.result);
+	  		                curPosition = singleVardec.position + 1;
+  	                } catch (final ParseException e) {
+  	                    shouldRunVardecs = false;
+  	                }
+  	            }
+  	           
+  	            //Checking if the structure has function definitions
+  	            final List<Functiondef> functiondefs = new ArrayList<Functiondef>();
+	        	boolean shouldRunFunctiondefs = true;
+	            while (shouldRunFunctiondefs) {
+	                try {
+			 	        final ParseResult<Functiondef> singleFunctiondef = parseFunctiondef(curPosition);
+		                functiondefs.add(singleFunctiondef.result);
+		                curPosition = singleFunctiondef.position;
+	                } catch (final ParseException e) {
+	                    shouldRunFunctiondefs = false;
+	                }
+	            }
+	            
+	            assertTokenHereIs(curPosition, new RightCurlyToken());
+  				return new ParseResult<Structdec>(new StructureDeclaration(structName.result, vardecs, functiondefs),
+  												  curPosition + 1);
+  			} else {
+  				throw new ParseException("expected structName; recieved: " + structNameToken);
+  			} 
+  		} else {
+  			throw new ParseException("expected struct; recieved: " + token);
+  		}
+	}
     
   //parse program
     public ParseResult<Program> parseProgram(final int position) throws ParseException {
+    	final List<Structdec> structuredecs = new ArrayList<Structdec>();
+    	int curPosition = position;
+        boolean shouldRunStructuredecs = true;
+        while (shouldRunStructuredecs) {
+            try {
+	 	        final ParseResult<Structdec> structdec = parseStructdec(curPosition);
+                structuredecs.add(structdec.result);
+                curPosition = structdec.position;
+            } catch (final ParseException e) {
+                shouldRunStructuredecs = false;
+            }
+        }
         final List<Functiondef> functiondefs = new ArrayList<Functiondef>();
-        int curPosition = position;
-        boolean shouldRun = true;
-        while (shouldRun) {
+        final ParseResult<Functiondef> entry = parseFunctiondef(curPosition);
+        curPosition = entry.position;
+        functiondefs.add(entry.result);
+        boolean shouldRunFunctiondefs = true;
+        while (shouldRunFunctiondefs) {
             try {
 	 	        final ParseResult<Functiondef> funcdef = parseFunctiondef(curPosition);
                 functiondefs.add(funcdef.result);
                 curPosition = funcdef.position;
             } catch (final ParseException e) {
-                shouldRun = false;
+                shouldRunFunctiondefs = false;
             }
         }
-        return new ParseResult<Program>(new Program(functiondefs),
+        return new ParseResult<Program>(new Program(structuredecs, 
+        											functiondefs),
                                         curPosition);
 	}
 	

@@ -11,7 +11,7 @@ public class IntToken implements Token {
     }
 
     public String toString() {
-        return "Int";
+        return "int";
     }
 
 }
