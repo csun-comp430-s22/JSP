@@ -11,16 +11,16 @@ import java.util.HashMap;
 public class Typechecker{
 	public final Program program;
 	
-	public final Map<FunctionName, Functiondef> functions;
+	public final Map<FunctionName, FunctionDefinition> functions;
 	
 	public Typechecker(final Program program) throws TypeErrorException {
         this.program = program;
-        functions = new HashMap<FunctionName, Functiondef>();
-        for (final Functiondef functiondef : program.functions) {
-            if (!functions.containsKey(functiondef.fname)) {
-                functions.put(functiondef.fname, functiondef);
+        functions = new HashMap<FunctionName, FunctionDefinition>();
+        for (final FunctionDefinition functiondef : program.functions) {
+            if (!functions.containsKey(functiondef.functionName)) {
+                functions.put(functiondef.functionName, functiondef);
             } else {
-                throw new TypeErrorException("Function with duplicate name: " + functiondef.fname);
+                throw new TypeErrorException("Function with duplicate name: " + functiondef.functionName);
             }
         }
     }
@@ -34,10 +34,10 @@ public class Typechecker{
 		}
 	}
 	
-	public Type typeofFunctionCall(final FunctionCallExp exp, final Map<Identifier, Type> typeEnviornment) throws TypeErrorException{
-		final Functiondef fdef = getFunctionByName(exp.fname);
+	/*public Type typeofFunctionCall(final FunctionCallExp exp, final Map<Identifier, Type> typeEnviornment) throws TypeErrorException{
+		final FunctionDefinition fdef = getFunctionByName(exp.functionName);
 		if(exp.params.size() != fdef.arguments.size()) {
-			throw new TypeErrorException("Wrong number of arguments for function: " + fdef.fname);
+			throw new TypeErrorException("Wrong number of arguments for function: " + fdef.functionName);
 		}
 		
 		for(int index = 0; index < exp.params.size(); index++) {
@@ -49,7 +49,7 @@ public class Typechecker{
 			}
 		}
 		return fdef.returnType;
-	}
+	}*/
 	
 	//op ::= + | - | * | / | . | < | > | && || ==
 	public Type typeofOp(final OpExp exp, final Map<Identifier, Type> typeEnviornment) throws TypeErrorException{
@@ -137,8 +137,8 @@ public class Typechecker{
 			}
 		}else if(exp instanceof OpExp) {
 			return typeofOp((OpExp)exp, typeEnviornment);
-		}else if(exp instanceof FunctionCallExp) {
-			return typeofFunctionCall((FunctionCallExp)exp, typeEnviornment);
+		/*}else if(exp instanceof FunctionCallExp) {
+			return typeofFunctionCall((FunctionCallExp)exp, typeEnviornment);*/
 		}else {
 			throw new TypeErrorException("Unsupported expression: " + exp);
 		}
@@ -160,7 +160,7 @@ public class Typechecker{
 		final Type receivedType = typeof(asDec.exp, typeEnviornment);
 		
 		if(receivedType.equals(expectedType)) {
-			return addToMap(typeEnviornment, asDec.vardec.variable, expectedType);
+			return addToMap(typeEnviornment, asDec.vardec.ident, expectedType);
 		}else {
 			throw new TypeErrorException("expected: " + expectedType + ", received: " + receivedType);
 		}
