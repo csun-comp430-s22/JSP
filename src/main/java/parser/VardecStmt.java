@@ -2,7 +2,6 @@ package parser;
 
 public class VardecStmt implements Stmt {
 	public final Vardec vardec;
-	public Exp exp;
 
     public VardecStmt(final Vardec vardec) {
         this.vardec = vardec;
@@ -25,3 +24,4 @@ public class VardecStmt implements Stmt {
         return ("VardecStmt(" + vardec.toString() + ")");
     }
 }
+
