@@ -10,15 +10,36 @@ import java.util.HashMap;
 
 public class Typechecker{
 	public final Program program;
+	public static final String BASE_FUNCTION = "Pointer";
 	
 	public final Map<FunctionName, FunctionDefinition> functions;
+	//public final Map<FunctionName, Map<Vardec, FunctionDefinition>> pointers;
+	
+	public static final FunctionDefinition getFunction(final FunctionName functionName, final Map<FunctionName, FunctionDefinition> func) throws TypeErrorException{
+		if(functionName.name.equals(BASE_FUNCTION)) {
+			return null;
+		}else {
+			final FunctionDefinition funcdef = func.get(functionName);
+			if(funcdef == null) {
+				throw new TypeErrorException("No such function: " + functionName);
+			}else {
+				return funcdef;
+			}
+		}
+	}
+	
+	public FunctionDefinition getFunction(final FunctionName functionName) throws TypeErrorException{
+		return getFunction(functionName, functions);
+	}
+	
+	//public static Map<FunctionName, FunctionDefinition> pointersForFunction(final FunctionName functionName, final Map<FunctionName, FunctionDefinition> functions) throws TypeErrorException{}
 	
 	public Typechecker(final Program program) throws TypeErrorException {
         this.program = program;
         functions = new HashMap<FunctionName, FunctionDefinition>();
         for (final FunctionDefinition functiondef : program.functions) {
             if (!functions.containsKey(functiondef.functionName)) {
-                functions.put(functiondef.functionName, functiondef);
+                functions.put((FunctionName) functiondef.functionName, functiondef);
             } else {
                 throw new TypeErrorException("Function with duplicate name: " + functiondef.functionName);
             }
@@ -28,7 +49,7 @@ public class Typechecker{
 	public Functiondef getFunctionByName(final FunctionName fname) throws TypeErrorException{
 		final Functiondef fdef = functions.get(fname);
 		if(fdef == null) {
-			throw new TypeErrorException("No such function with name: " + fname);
+			throw new TypeErrorException("No function with name: " + fname);
 		}else {
 			return fdef;
 		}
@@ -53,8 +74,8 @@ public class Typechecker{
 	
 	//op ::= + | - | * | / | . | < | > | && || ==
 	public Type typeofOp(final OpExp exp, final Map<Identifier, Type> typeEnviornment) throws TypeErrorException{
-		final Type leftType = typeof(exp.left, typeEnviornment);
-		final Type rightType = typeof(exp.right, typeEnviornment);
+		final Type leftType = typeofExp(exp.left, typeEnviornment);
+		final Type rightType = typeofExp(exp.right, typeEnviornment);
 		if(exp.op instanceof AddOp) {
 			if(leftType instanceof IntType && rightType instanceof IntType) {
 				return new IntType();
@@ -98,12 +119,6 @@ public class Typechecker{
 			}else {
 				throw new TypeErrorException("Incorrect types for >");
 			}
-		}else if(exp.op instanceof AndOp) {
-			if(leftType instanceof BoolType && rightType instanceof BoolType) {
-				return new BoolType();
-			}else {
-				throw new TypeErrorException("Incorrect types for &&");
-			}
 		}else if(exp.op instanceof EqualToOp) {
 			if(leftType instanceof BoolType && rightType instanceof BoolType) {
 				return new BoolType();
@@ -115,12 +130,12 @@ public class Typechecker{
 		}
 	}
 	
-	//type enviornment: Indentifier -> Type
-	public Type typeof(final Exp exp, final Map<Identifier, Type> typeEnviornment) throws TypeErrorException{
+	//type enviornment: Identifier -> Type
+	public Type typeofExp(final Exp exp, final Map<Identifier, Type> typeEnviornment) throws TypeErrorException{
 		
-		if(exp instanceof BooleanLiteralExp) {
-			return new BoolType();
-		}else if(exp instanceof VoidLiteralExp) {
+		if(exp instanceof Vardec) {
+			return new typeofVardec();
+		}/*else if(exp instanceof VoidLiteralExp) {
 			return new VoidType();
 		}/*else if(exp instanceof StructNameLiteralExp) {
 			return new StructNameType();
@@ -169,7 +184,7 @@ public class Typechecker{
 	public Map<Identifier, Type> typecheckIf(final IfStmt asIf,
             final Map<Identifier, Type> typeEnvironment,
             final Type returnType) throws TypeErrorException {
-			final Type receivedType = typeof(asIf.guard, typeEnvironment);
+			final Type receivedType = typeofExp(asIf.guard, typeEnvironment);
 			if (receivedType.equals(new BoolType())) {
 
 				typecheckStmt(asIf.trueBranch, typeEnvironment, returnType);
@@ -181,7 +196,7 @@ public class Typechecker{
 	}
 	
 	public Map<Identifier, Type> typecheckWhile(final WhileStmt asWhile, final Map<Identifier, Type> typeEnvironment, final Type returnType) throws TypeErrorException{
-		final Type receivedType = typeof(asWhile.guard, typeEnvironment);
+		final Type receivedType = typeofExp(asWhile.guard, typeEnvironment);
         if (receivedType.equals(new BoolType())) {
             typecheckStmt(asWhile.body, typeEnvironment, returnType);
             return typeEnvironment;
@@ -193,7 +208,7 @@ public class Typechecker{
 	public Map<Identifier, Type> typecheckReturn(final ReturnStmt asReturn,
             final Map<Identifier, Type> typeEnvironment,
             final Type returnType) throws TypeErrorException {
-			final Type receivedType = typeof(asReturn.exp, typeEnvironment);
+			final Type receivedType = typeofExp(asReturn.exp, typeEnvironment);
 			if (returnType.equals(receivedType)) {
 				return typeEnvironment;
 			} else {
