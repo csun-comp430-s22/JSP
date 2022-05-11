@@ -1,5 +1,6 @@
 package typechecker;
 
+import lexer.*;
 import parser.*;
 
 import java.util.List;
@@ -142,7 +143,7 @@ public class Typechecker{
 		}else if(exp instanceof IntegerLiteralExp) {
 			return new IntType();
 		}*/else if(exp instanceof IdentifierExp) {
-			final Identifier identifier = ((IdentifierExp)exp).identifier;
+			final Identifier identifier = ((IdentifierExp)exp).ident;
 			final Type identifierType = typeEnviornment.get(identifier);
 			
 			if(identifierType == null) {
@@ -240,6 +241,12 @@ public class Typechecker{
 			return typecheckReturn((ReturnStmt)stmt, typeEnviornment, returnType);
 		}else {
 			throw new TypeErrorException("Unsoupported statement: " + stmt);
+		}
+	}
+	
+	public void typecheck() throws TypeErrorException {
+		for(final Functiondef fdef : program.functions) {
+			typecheckFunction(fdef);
 		}
 	}
 }
