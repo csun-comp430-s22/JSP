@@ -1,9 +1,9 @@
 package lexer;
 
-public class IdentifierToken implements Token {
+public class VarToken implements Token {
 	public final String name;
 	
-	public IdentifierToken(final String name){
+	public VarToken(final String name){
 		this.name = name;
 	}
 	
@@ -12,16 +12,15 @@ public class IdentifierToken implements Token {
 	}
 	
 	public String toString(){
-		return "Identifier(" + name + ")";
+		return "Var(" + name + ")";
 	}
 	
 	public boolean equals(final Object tokens){
-		if(tokens instanceof IdentifierToken){
-			final IdentifierToken asIdent = (IdentifierToken)tokens;
+		if(tokens instanceof VarToken){
+			final VarToken asIdent = (VarToken)tokens;
 			return name.equals(asIdent.name);
 		}else{
 			return false;
 		}
-		
 	}
 }

@@ -93,7 +93,7 @@ public class TokenizerTest {
 	
 	@Test(expected = TokenizerException.class)
 	public void testInvalid() throws TokenizerException {
-		assertTokenizes("$", null);
+		assertTokenizes("%", null);
 	}
 	
 	@Test
@@ -113,13 +113,18 @@ public class TokenizerTest {
 	}
 	
 	@Test
-	public void testIdentifierAllLowercase() throws TokenizerException {
-		assertTokenizes("foo", new Token[] { new IdentifierToken("foo") });
+	public void testFunctName() throws TokenizerException {
+		assertTokenizes("$foo", new Token[] { new FunctNameToken("$foo") });
 	}
 	
 	@Test
-	public void testIdentifierWithUppercase() throws TokenizerException {
-		assertTokenizes("fooBar", new Token[] { new IdentifierToken("fooBar") });
+	public void testVarAllLowercase() throws TokenizerException {
+		assertTokenizes("foo", new Token[] { new VarToken("foo") });
+	}
+	
+	@Test
+	public void testVarWithUppercase() throws TokenizerException {
+		assertTokenizes("fooBar", new Token[] { new VarToken("fooBar") });
 	}
 	
 	@Test

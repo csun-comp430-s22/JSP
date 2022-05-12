@@ -62,6 +62,29 @@ public class Tokenizer {
         }
     }
     
+    public Token tryTokenizeFunctName() {
+    	skipWhitespace();
+    	String name = "";
+
+        //read characters individually
+        //first functionname char is a dollar symbol
+        //followed by letter or integer
+        if (offset < input.length() &&
+        	input.startsWith("$")) {
+            name += "$";
+            offset += 1;
+
+            while (offset < input.length() &&
+                    Character.isLetterOrDigit(input.charAt(offset))) {
+                 name += input.charAt(offset);
+                 offset++;
+             }
+             return new FunctNameToken(name);
+        } else {
+        	return null;
+        }
+    }
+    
     // returns null if no variable or keyword
     public Token tryTokenizeIdentifierOrKeyword() {
         skipWhitespace();
@@ -108,7 +131,7 @@ public class Tokenizer {
             } else if(name.equals("struct")) {
             	return new StructToken();
             } else {
-                return new IdentifierToken(name);
+                return new VarToken(name);
             }
         } else {
             return null;
@@ -182,6 +205,7 @@ public class Tokenizer {
         skipWhitespace();
         if (offset < input.length() &&
         	(retval = tryTokenizeStructName()) == null &&
+        	(retval = tryTokenizeFunctName()) == null &&
             (retval = tryTokenizeIdentifierOrKeyword()) == null &&
             (retval = tryTokenizeInteger()) == null &&
             (retval = tryTokenizeSymbol()) == null) {
