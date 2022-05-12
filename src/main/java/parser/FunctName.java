@@ -1,9 +1,9 @@
 package parser;
 
-public class Identifier{
+public class FunctName {
 	public final String name;
 	
-	public Identifier(final String name) {
+	public FunctName(final String name) {
 		this.name = name;
 	}
 	
@@ -12,10 +12,10 @@ public class Identifier{
 	}
 	
 	public boolean equals(final Object other) {
-		return(other instanceof Identifier && name.equals(((Identifier)other).name));
+		return(other instanceof FunctName && name.equals(((FunctName)other).name));
 	}
 	
 	public String toString() {
-		return "Ident(" + name + ")";
+		return "FunctName(" + name + ")";
 	}
-} 
+}

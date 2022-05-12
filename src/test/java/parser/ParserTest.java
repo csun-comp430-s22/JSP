@@ -25,10 +25,17 @@ public class ParserTest {
 	}
 	
 	@Test
-	public void testIdentifierToken() throws ParseException{
-		final List<Token> singleIdentifierToken = createTokenArrayList(new IdentifierToken("x"));
-		final Parser parser = new Parser(singleIdentifierToken);
-		assertEquals(new IdentifierToken("x"), parser.getToken(0));
+	public void testVarToken() throws ParseException{
+		final List<Token> singleVarToken = createTokenArrayList(new VarToken("x"));
+		final Parser parser = new Parser(singleVarToken);
+		assertEquals(new VarToken("x"), parser.getToken(0));
+	}
+	
+	@Test
+	public void testFunctNameToken() throws ParseException{
+		final List<Token> singleFunctNameToken = createTokenArrayList(new FunctNameToken("$x"));
+		final Parser parser = new Parser(singleFunctNameToken);
+		assertEquals(new FunctNameToken("$x"), parser.getToken(0));
 	}
 	
 	@Test
@@ -39,17 +46,17 @@ public class ParserTest {
 	}
 	
 	@Test
-	public void testPrimaryIdentifierPrimaryExp() throws ParseException{
-		final List<Token> singleIdentifierToken = createTokenArrayList(new IdentifierToken("x"));
-		final Parser parser = new Parser(singleIdentifierToken);
-		assertEquals(new ParseResult<Exp>(new IdentifierExp(new Identifier("x")), 1), parser.parsePrimaryExp(0));
+	public void testPrimaryVarExp() throws ParseException{
+		final List<Token> singleVarToken = createTokenArrayList(new VarToken("x"));
+		final Parser parser = new Parser(singleVarToken);
+		assertEquals(new ParseResult<Exp>(new VarExp(new Var("x")), 1), parser.parsePrimaryExp(0));
 	}
 	
 	@Test
-	public void testPrimaryIdentifierExp() throws ParseException{
-		final List<Token> singleIdentifierToken = createTokenArrayList(new IdentifierToken("y"));
-		final Parser parser = new Parser(singleIdentifierToken);
-		assertEquals(new ParseResult<Exp>(new IdentifierExp(new Identifier("y")), 1), parser.parseExp(0));
+	public void testPrimaryFunctNameExp() throws ParseException{
+		final List<Token> singleFunctNameToken = createTokenArrayList(new FunctNameToken("$x"));
+		final Parser parser = new Parser(singleFunctNameToken);
+		assertEquals(new ParseResult<Exp>(new FunctNameExp(new FunctName("$x")), 1), parser.parsePrimaryExp(0));
 	}
 	
 	
@@ -93,9 +100,9 @@ public class ParserTest {
 	}
 	
 	@Test
-	public void testPrimaryParenthIdent() throws ParseException{
-		final Parser parser = new Parser(Arrays.asList(new LeftParenToken(), new IdentifierToken("x"), new RightParenToken()));
-		assertEquals(new ParseResult<Exp>(new IdentifierExp(new Identifier("x")), 3), parser.parsePrimaryExp(0));
+	public void testPrimaryParenth() throws ParseException{
+		final Parser parser = new Parser(Arrays.asList(new LeftParenToken(), new VarToken("x"), new RightParenToken()));
+		assertEquals(new ParseResult<Exp>(new VarExp(new Var("x")), 3), parser.parsePrimaryExp(0));
 	}
 	
 	 @Test
@@ -175,60 +182,107 @@ public class ParserTest {
 	@Test
 	public void testPointerExpPointer() throws ParseException{
 		final Parser parser = new Parser(Arrays.asList(new MultiplicationToken(),
-				   									   new IdentifierToken("x")));
+				   									   new VarToken("x")));
 		final Exp expected = new PointerExp(new PointerOp(),
-									   		new IdentifierExp(new Identifier("x")));
+									   		new VarExp(new Var("x")));
 		assertEquals(new ParseResult<Exp>(expected, 2), parser.parsePrimaryExp(0));
 	}
 	
 	@Test
 	public void testPointerExpAddress() throws ParseException{
 		final Parser parser = new Parser(Arrays.asList(new AddressToken(),
-				   									   new IdentifierToken("x")));
+				   									   new VarToken("x")));
 		final Exp expected = new PointerExp(new AddressOp(),
-									   		new IdentifierExp(new Identifier("x")));
+									   		new VarExp(new Var("x")));
 		assertEquals(new ParseResult<Exp>(expected, 2), parser.parsePrimaryExp(0));
 	}
 	
 	@Test
-	public void testCallExpEmpty() throws ParseException{
+	public void testFunctCallExpEmpty() throws ParseException{
 		List params = new ArrayList();
 		params.add(3);
-		final Parser parser = new Parser(Arrays.asList(new IdentifierToken("x"),
+		final Parser parser = new Parser(Arrays.asList(new FunctNameToken("$x"),
 				   									   new LeftParenToken(),
 				   									   new RightParenToken()));
-		final Exp expected = new CallExp(new IdentifierExp(new Identifier("x")),
+		final Exp expected = new FunctCallExp(new FunctNameExp(new FunctName("$x")),
 										 params);
 		assertEquals(new ParseResult<Exp>(expected, 3), parser.parsePrimaryExp(0));
 	}
 	
 	@Test
-	public void testCallExpIdentifierParam() throws ParseException{
+	public void testFunctPointerCallExpEmpty() throws ParseException{
 		List params = new ArrayList();
-		params.add(new ParseResult<Exp>(new IdentifierExp(new Identifier("y")), 3));
-		params.add(4);
-		final Parser parser = new Parser(Arrays.asList(new IdentifierToken("x"),
+		params.add(3);
+		final Parser parser = new Parser(Arrays.asList(new VarToken("x"),
 				   									   new LeftParenToken(),
-				   									   new IdentifierToken("y"),
 				   									   new RightParenToken()));
-		final Exp expected = new CallExp(new IdentifierExp(new Identifier("x")),
+		final Exp expected = new FunctPointerCallExp(new VarExp(new Var("x")),
+										 params);
+		assertEquals(new ParseResult<Exp>(expected, 3), parser.parsePrimaryExp(0));
+	}
+	
+	@Test
+	public void testFunctCallExpVarParam() throws ParseException{
+		//$x(y)
+		List params = new ArrayList();
+		params.add(new ParseResult<Exp>(new VarExp(new Var("y")), 3));
+		params.add(4);
+		final Parser parser = new Parser(Arrays.asList(new FunctNameToken("$x"),
+				   									   new LeftParenToken(),
+				   									   new VarToken("y"),
+				   									   new RightParenToken()));
+		final Exp expected = new FunctCallExp(new FunctNameExp(new FunctName("$x")),
 										 params);
 		assertEquals(new ParseResult<Exp>(expected, 4), parser.parsePrimaryExp(0));
 	}
 	
 	@Test
-	public void testCallExpMultiParam() throws ParseException{
+	public void testFunctPointerCallExpFunctNameParam() throws ParseException{
+		//x($y)
 		List params = new ArrayList();
-		params.add(new ParseResult<Exp>(new IdentifierExp(new Identifier("y")), 3));
+		params.add(new ParseResult<Exp>(new FunctNameExp(new FunctName("$y")), 3));
+		params.add(4);
+		final Parser parser = new Parser(Arrays.asList(new VarToken("x"),
+				   									   new LeftParenToken(),
+				   									   new FunctNameToken("$y"),
+				   									   new RightParenToken()));
+		final Exp expected = new FunctPointerCallExp(new VarExp(new Var("x")),
+										 params);
+		assertEquals(new ParseResult<Exp>(expected, 4), parser.parsePrimaryExp(0));
+	}
+	
+	@Test
+	public void testFunctCallExpMultiParam() throws ParseException{
+		//$x(y,1)
+		List params = new ArrayList();
+		params.add(new ParseResult<Exp>(new VarExp(new Var("y")), 3));
 		params.add(new ParseResult<Exp>(new IntegerExp(1), 5));
 		params.add(6);
-		final Parser parser = new Parser(Arrays.asList(new IdentifierToken("x"),
+		final Parser parser = new Parser(Arrays.asList(new FunctNameToken("$x"),
 				   									   new LeftParenToken(),
-				   									   new IdentifierToken("y"),
+				   									   new VarToken("y"),
 				   									   new CommaToken(),
 				   									   new IntegerVariable(1),
 				   									   new RightParenToken()));
-		final Exp expected = new CallExp(new IdentifierExp(new Identifier("x")),
+		final Exp expected = new FunctCallExp(new FunctNameExp(new FunctName("$x")),
+										 params);
+		assertEquals(new ParseResult<Exp>(expected, 6), parser.parsePrimaryExp(0));
+	}
+	
+	@Test
+	public void testFunctPointerCallExpMultiParam() throws ParseException{
+		//x(y,1)
+		List params = new ArrayList();
+		params.add(new ParseResult<Exp>(new VarExp(new Var("y")), 3));
+		params.add(new ParseResult<Exp>(new IntegerExp(1), 5));
+		params.add(6);
+		final Parser parser = new Parser(Arrays.asList(new VarToken("x"),
+				   									   new LeftParenToken(),
+				   									   new VarToken("y"),
+				   									   new CommaToken(),
+				   									   new IntegerVariable(1),
+				   									   new RightParenToken()));
+		final Exp expected = new FunctPointerCallExp(new VarExp(new Var("x")),
 										 params);
 		assertEquals(new ParseResult<Exp>(expected, 6), parser.parsePrimaryExp(0));
 	}
@@ -332,10 +386,10 @@ public class ParserTest {
     @Test
     public void testGreaterThanSingleOperator() throws ParseException{
     	// x > 4
-    	final Parser parser = new Parser(Arrays.asList(new IdentifierToken("x"),
+    	final Parser parser = new Parser(Arrays.asList(new VarToken("x"),
     													new LessThanToken(),
     													new IntegerVariable(4)));
-    	final Exp expected = new OpExp(new IdentifierExp(new Identifier("x")), new LessThanOp(), new IntegerExp(4));
+    	final Exp expected = new OpExp(new VarExp(new Var("x")), new LessThanOp(), new IntegerExp(4));
     	assertEquals(new ParseResult<Exp>(expected, 3), parser.parseComparisonExp(0));
     }
     
@@ -520,17 +574,17 @@ public class ParserTest {
     												   new RightParenToken(),
     												   new PrintToken(),
     												   new LeftParenToken(),
-    												   new IdentifierToken("x"),
+    												   new VarToken("x"),
     												   new RightParenToken(),
     												   new SemiColonToken(),
     												   new ElseToken(),
-    												   new IdentifierToken("x"),
+    												   new VarToken("x"),
     												   new LessThanToken(),
     												   new IntegerVariable(3),
     												   new SemiColonToken()));
         final Stmt expected = new IfStmt(new IntegerExp(1), 
-        								 new PrintStmt(new IdentifierExp(new Identifier("x"))), 
-        								 new ExpStmt(new OpExp(new IdentifierExp(new Identifier("x")),
+        								 new PrintStmt(new VarExp(new Var("x"))), 
+        								 new ExpStmt(new OpExp(new VarExp(new Var("x")),
         										   			   new LessThanOp(),
         										   			   new IntegerExp(3)))
         								 );
@@ -542,7 +596,7 @@ public class ParserTest {
     	//while(x < 4) print(2);
     	final Parser parser = new Parser(Arrays.asList(new WhileToken(),
     												   new LeftParenToken(),
-    												   new IdentifierToken("x"),
+    												   new VarToken("x"),
     												   new LessThanToken(),
     												   new IntegerVariable(4),
     												   new RightParenToken(),
@@ -551,7 +605,7 @@ public class ParserTest {
     												   new IntegerVariable(2),
     												   new RightParenToken(),
     												   new SemiColonToken()));
-        final Stmt expected = new WhileStmt(new OpExp(new IdentifierExp(new Identifier("x")),
+        final Stmt expected = new WhileStmt(new OpExp(new VarExp(new Var("x")),
         											  new LessThanOp(),
         											  new IntegerExp(4)),
         									new PrintStmt(new IntegerExp(2)));
@@ -582,13 +636,13 @@ public class ParserTest {
     	final Parser parser = new Parser(Arrays.asList(new PrintToken(),
     												   new LeftParenToken(),
     												   new LeftParenToken(),
-    												   new IdentifierToken("x"),
+    												   new VarToken("x"),
     												   new AddToken(),
     												   new IntegerVariable(1),
     												   new RightParenToken(),
     												   new RightParenToken(),
     												   new SemiColonToken()));
-        final Stmt expected = new PrintStmt(new OpExp(new IdentifierExp(new Identifier("x")),
+        final Stmt expected = new PrintStmt(new OpExp(new VarExp(new Var("x")),
         											  new AddOp(),
         											  new IntegerExp(1)));
         assertEquals(new ParseResult<Stmt>(expected, 9), parser.parseStmt(0));
@@ -625,9 +679,9 @@ public class ParserTest {
     @Test
     public void testExpStmts() throws ParseException{
     	//x;
-    	final Parser parser = new Parser(Arrays.asList(new IdentifierToken("x"), 
+    	final Parser parser = new Parser(Arrays.asList(new VarToken("x"), 
     												   new SemiColonToken()));
-        final Stmt expected = new ExpStmt(new IdentifierExp(new Identifier("x")));
+        final Stmt expected = new ExpStmt(new VarExp(new Var("x")));
         assertEquals(new ParseResult<Stmt>(expected, 2), parser.parseStmt(0));
     }  
     
@@ -635,22 +689,22 @@ public class ParserTest {
     public void testVardecStmts() throws ParseException{
     	//int x;
     	final Parser parser = new Parser(Arrays.asList(new IntToken(), 
-				   									   new IdentifierToken("x"),
+				   									   new VarToken("x"),
 				   									   new SemiColonToken()));
-    	final Stmt expected = new VardecStmt(new Vardec(new IntType(), new Identifier("x")));
+    	final Stmt expected = new VardecStmt(new Vardec(new IntType(), new Var("x")));
         assertEquals(new ParseResult<Stmt>(expected, 3), parser.parseStmt(0));
     } 
     
     @Test
     public void testLhsStmts() throws ParseException{
     	//x = 1 + 2;
-    	final Parser parser = new Parser(Arrays.asList(new IdentifierToken("x"),
+    	final Parser parser = new Parser(Arrays.asList(new VarToken("x"),
     												   new AssignmentToken(),
     												   new IntegerVariable(1),
     												   new AddToken(),
     												   new IntegerVariable(2),
     												   new SemiColonToken()));
-        final Stmt expected = new LhsStmt(new IdentifierLhs(new IdentifierExp(new Identifier("x"))),
+        final Stmt expected = new LhsStmt(new VarLhs(new VarExp(new Var("x"))),
         								  new OpExp(new IntegerExp(1),
         										    new AddOp(),
         										    new IntegerExp(2)));
@@ -661,17 +715,17 @@ public class ParserTest {
     public void testVardec() throws ParseException{
     	//int x
     	final Parser parser = new Parser(Arrays.asList(new IntToken(), 
-    												   new IdentifierToken("x")));
-        final Vardec expected = new Vardec(new IntType(), new Identifier("x"));
+    												   new VarToken("x")));
+        final Vardec expected = new Vardec(new IntType(), new Var("x"));
         assertEquals(new ParseResult<Vardec>(expected, 2), parser.parseVardec(0));
     } 
     
     @Test
-    public void testPrimaryLhsIdentifier() throws ParseException{
+    public void testPrimaryLhsVar() throws ParseException{
     	//x
-    	final List<Token> singleIdentifierToken = createTokenArrayList(new IdentifierToken("x"));
+    	final List<Token> singleIdentifierToken = createTokenArrayList(new VarToken("x"));
 		final Parser parser = new Parser(singleIdentifierToken);
-        final Lhs expected = new IdentifierLhs(new IdentifierExp(new Identifier("x")));
+        final Lhs expected = new VarLhs(new VarExp(new Var("x")));
         assertEquals(new ParseResult<Lhs>(expected, 1), parser.parsePrimaryLhs(0));
     } 
     
@@ -679,21 +733,21 @@ public class ParserTest {
     public void testPrimaryLhsPointer() throws ParseException{
     	//*x
     	final Parser parser = new Parser(Arrays.asList(new MultiplicationToken(), 
-				   									   new IdentifierToken("x")));
+				   									   new VarToken("x")));
         final Lhs expected = new PointerLhs(new PointerLhsOp(), 
-        									new IdentifierLhs(new IdentifierExp(new Identifier("x"))));
+        									new VarLhs(new VarExp(new Var("x"))));
         assertEquals(new ParseResult<Lhs>(expected, 2), parser.parsePrimaryLhs(0));
     } 
     
     @Test
-    public void testSingleIdentifierFieldLhs() throws ParseException{
+    public void testSingleVarFieldLhs() throws ParseException{
     	//x.y
-    	final Parser parser = new Parser(Arrays.asList(new IdentifierToken("x"),
+    	final Parser parser = new Parser(Arrays.asList(new VarToken("x"),
     												   new PeriodToken(),
-				   									   new IdentifierToken("y")));
-        final Lhs expected = new FieldLhs(new IdentifierLhs(new IdentifierExp(new Identifier("x"))),
+				   									   new VarToken("y")));
+        final Lhs expected = new FieldLhs(new VarLhs(new VarExp(new Var("x"))),
         								  new FieldOp(),
-        								  new IdentifierLhs(new IdentifierExp(new Identifier("y"))));
+        								  new VarLhs(new VarExp(new Var("y"))));
         assertEquals(new ParseResult<Lhs>(expected, 3), parser.parseFieldLhs(0));
     } 
     
@@ -701,13 +755,13 @@ public class ParserTest {
     public void testSinglePointerFieldLhs() throws ParseException{
     	//*x.y
     	final Parser parser = new Parser(Arrays.asList(new MultiplicationToken(),
-    												   new IdentifierToken("x"),
+    												   new VarToken("x"),
     												   new PeriodToken(),
-				   									   new IdentifierToken("y")));
+				   									   new VarToken("y")));
         final Lhs expected = new FieldLhs(new PointerLhs(new PointerLhsOp(), 
-        												 new IdentifierLhs(new IdentifierExp(new Identifier("x")))),
+        												 new VarLhs(new VarExp(new Var("x")))),
         								  new FieldOp(),
-        								  new IdentifierLhs(new IdentifierExp(new Identifier("y"))));
+        								  new VarLhs(new VarExp(new Var("y"))));
         assertEquals(new ParseResult<Lhs>(expected, 4), parser.parseFieldLhs(0));
     } 
     
@@ -715,37 +769,37 @@ public class ParserTest {
     public void testPointerMultiFieldLhs() throws ParseException{
     	//*x.y.z
     	final Parser parser = new Parser(Arrays.asList(new MultiplicationToken(),
-    												   new IdentifierToken("x"),
+    												   new VarToken("x"),
     												   new PeriodToken(),
-				   									   new IdentifierToken("y"),
+				   									   new VarToken("y"),
 				   									   new PeriodToken(),
-				   									   new IdentifierToken("z")));
+				   									   new VarToken("z")));
         final Lhs expected = new FieldLhs(new PointerLhs(new PointerLhsOp(), 
-        												 new IdentifierLhs(new IdentifierExp(new Identifier("x")))),
+        												 new VarLhs(new VarExp(new Var("x")))),
 					 					  new FieldOp(),
-					 					  new FieldLhs(new IdentifierLhs(new IdentifierExp(new Identifier("y"))),
+					 					  new FieldLhs(new VarLhs(new VarExp(new Var("y"))),
 					 							  	   new FieldOp(),
-					 							  	   new IdentifierLhs(new IdentifierExp(new Identifier("z")))));
+					 							  	   new VarLhs(new VarExp(new Var("z")))));
         assertEquals(new ParseResult<Lhs>(expected, 6), parser.parseFieldLhs(0));
     }
     
     @Test
     public void testFunctionDefinitionsOneParam() throws ParseException{
-    	//int myFunc(Boolean x) return 2;
-    	final ParseResult<Vardec> boolVardec = new ParseResult<Vardec>(new Vardec(new BoolType(), new Identifier("x")), 2);
+    	//int $myFunc(Boolean x) return 2;
+    	final ParseResult<Vardec> boolVardec = new ParseResult<Vardec>(new Vardec(new BoolType(), new Var("x")), 2);
     	List<Vardec> params = new ArrayList<Vardec>();
     	params.add(boolVardec.result);
     	final Parser parser = new Parser(Arrays.asList(new IntToken(),
-    												   new IdentifierToken("myFunc"),
+    												   new FunctNameToken("$myFunc"),
     												   new LeftParenToken(),
     												   new BooleanToken(),
-				   									   new IdentifierToken("x"),
+				   									   new VarToken("x"),
 				   									   new RightParenToken(),
 				   									   new ReturnToken(),
 				   									   new IntegerVariable(2),
 				   									   new SemiColonToken()));
         final Functiondef expected = new FunctionDefinition(new IntType(),
-        													new IdentifierExp(new Identifier("myFunc")),
+        													new FunctNameExp(new FunctName("$myFunc")),
         													params,
         													new ReturnStmt(new IntegerExp(2)));
         assertEquals(new ParseResult<Functiondef>(expected, 9), parser.parseFunctiondef(0));
@@ -753,34 +807,34 @@ public class ParserTest {
     
     @Test
     public void testFunctionDefinitionsMultiParam() throws ParseException{
-    	//void testFunc(MyStruct test, Int* test2) print(y);
+    	//void $testFunc(MyStruct test, Int* test2) print(y);
     	final ParseResult<Vardec> structNameVardec = new ParseResult<Vardec>(new Vardec(new StructNameType(new StructName("MyStruct")), 
-    																					new Identifier("test")), 2);
+    																					new Var("test")), 2);
     	final ParseResult<Vardec> intPointerVardec = new ParseResult<Vardec>(new Vardec(new PointerType(new IntType(),
     																									new PointerTypeOp()), 
-    																					new Identifier("test2")), 2);
+    																					new Var("test2")), 2);
     	List<Vardec> params = new ArrayList<Vardec>();
     	params.add(structNameVardec.result);
     	params.add(intPointerVardec.result);
     	final Parser parser = new Parser(Arrays.asList(new VoidToken(),
-    												   new IdentifierToken("testFunc"),
+    												   new FunctNameToken("$testFunc"),
     												   new LeftParenToken(),
     												   new StructNameToken("MyStruct"),
-				   									   new IdentifierToken("test"),
+				   									   new VarToken("test"),
 				   									   new CommaToken(),
 				   									   new IntToken(),
 				   									   new MultiplicationToken(),
-				   									   new IdentifierToken("test2"),
+				   									   new VarToken("test2"),
 				   									   new RightParenToken(),
 				   									   new PrintToken(),
 				   									   new LeftParenToken(),
-				   									   new IdentifierToken("y"),
+				   									   new VarToken("y"),
 				   									   new RightParenToken(),
 				   									   new SemiColonToken()));
         final Functiondef expected = new FunctionDefinition(new VoidType(),
-        													new IdentifierExp(new Identifier("testFunc")),
+        													new FunctNameExp(new FunctName("$testFunc")),
         													params,
-        													new PrintStmt(new IdentifierExp(new Identifier("y"))));
+        													new PrintStmt(new VarExp(new Var("y"))));
         assertEquals(new ParseResult<Functiondef>(expected, 15), parser.parseFunctiondef(0));
     }
     
@@ -793,10 +847,10 @@ public class ParserTest {
     												   new StructNameToken("MyStruct"),
     												   new LeftCurlyToken(),
     												   new IntToken(),
-    												   new IdentifierToken("x"),
+    												   new VarToken("x"),
     												   new SemiColonToken(),
 				   									   new RightCurlyToken()));
-        final Vardec expectedVardec = new Vardec(new IntType(), new Identifier("x"));
+        final Vardec expectedVardec = new Vardec(new IntType(), new Var("x"));
     	final List<Vardec> vardecs = new ArrayList<Vardec>();
     	vardecs.add(expectedVardec);
     	final List<Functiondef> functiondefs = new ArrayList<Functiondef>();
@@ -809,26 +863,26 @@ public class ParserTest {
     @Test
     public void testStructdecFunctiondef() throws ParseException{
     	//struct MyStruct {
-    	//int myFunc(Boolean x) return 2;
+    	//int $myFunc(Boolean x) return 2;
     	//}
     	final Parser parser = new Parser(Arrays.asList(new StructToken(),
     												   new StructNameToken("MyStruct"),
     												   new LeftCurlyToken(),
     												   new IntToken(),
-    												   new IdentifierToken("myFunc"),
+    												   new FunctNameToken("$myFunc"),
     												   new LeftParenToken(),
     												   new BooleanToken(),
-				   									   new IdentifierToken("x"),
+				   									   new VarToken("x"),
 				   									   new RightParenToken(),
 				   									   new ReturnToken(),
 				   									   new IntegerVariable(2),
 				   									   new SemiColonToken(),
 				   									   new RightCurlyToken()));
-    	final ParseResult<Vardec> boolVardec = new ParseResult<Vardec>(new Vardec(new BoolType(), new Identifier("x")), 2);
+    	final ParseResult<Vardec> boolVardec = new ParseResult<Vardec>(new Vardec(new BoolType(), new Var("x")), 2);
     	List<Vardec> params = new ArrayList<Vardec>();
     	params.add(boolVardec.result);
         final Functiondef expectedFunctiondef = new FunctionDefinition(new IntType(),
-        													new IdentifierExp(new Identifier("myFunc")),
+        													new FunctNameExp(new FunctName("$myFunc")),
         													params,
         													new ReturnStmt(new IntegerExp(2)));
     	final List<Vardec> vardecs = new ArrayList<Vardec>();
@@ -844,32 +898,32 @@ public class ParserTest {
     public void testStructdec() throws ParseException{
     	//struct MyStruct {
     	//int x;
-    	//int myFunc(Boolean x) return 2;
+    	//int $myFunc(Boolean x) return 2;
     	//}
     	final Parser parser = new Parser(Arrays.asList(new StructToken(),
     												   new StructNameToken("MyStruct"),
     												   new LeftCurlyToken(),
     												   new IntToken(),
-    												   new IdentifierToken("x"),
+    												   new VarToken("x"),
     												   new SemiColonToken(),
     												   new IntToken(),
-    												   new IdentifierToken("myFunc"),
+    												   new FunctNameToken("$myFunc"),
     												   new LeftParenToken(),
     												   new BooleanToken(),
-				   									   new IdentifierToken("x"),
+				   									   new VarToken("x"),
 				   									   new RightParenToken(),
 				   									   new ReturnToken(),
 				   									   new IntegerVariable(2),
 				   									   new SemiColonToken(),
 				   									   new RightCurlyToken()));
-    	final ParseResult<Vardec> boolVardec = new ParseResult<Vardec>(new Vardec(new BoolType(), new Identifier("x")), 2);
+    	final ParseResult<Vardec> boolVardec = new ParseResult<Vardec>(new Vardec(new BoolType(), new Var("x")), 2);
     	List<Vardec> params = new ArrayList<Vardec>();
     	params.add(boolVardec.result);
         final Functiondef expectedFunctiondef = new FunctionDefinition(new IntType(),
-        													new IdentifierExp(new Identifier("myFunc")),
+        													new FunctNameExp(new FunctName("$myFunc")),
         													params,
         													new ReturnStmt(new IntegerExp(2)));
-        final Vardec expectedVardec = new Vardec(new IntType(), new Identifier("x"));
+        final Vardec expectedVardec = new Vardec(new IntType(), new Var("x"));
     	final List<Vardec> vardecs = new ArrayList<Vardec>();
     	vardecs.add(expectedVardec);
     	final List<Functiondef> functiondefs = new ArrayList<Functiondef>();
@@ -882,21 +936,21 @@ public class ParserTest {
     
     @Test
     public void testProgramEntry() throws ParseException{
-    	//int myFunc(Boolean x) return 2;
+    	//int $myFunc(Boolean x) return 2;
     	final Parser parser = new Parser(Arrays.asList(new IntToken(),
-    												   new IdentifierToken("myFunc"),
+    												   new FunctNameToken("$myFunc"),
     												   new LeftParenToken(),
     												   new BooleanToken(),
-				   									   new IdentifierToken("x"),
+				   									   new VarToken("x"),
 				   									   new RightParenToken(),
 				   									   new ReturnToken(),
 				   									   new IntegerVariable(2),
 				   									   new SemiColonToken()));
-    	final ParseResult<Vardec> boolVardec = new ParseResult<Vardec>(new Vardec(new BoolType(), new Identifier("x")), 2);
+    	final ParseResult<Vardec> boolVardec = new ParseResult<Vardec>(new Vardec(new BoolType(), new Var("x")), 2);
     	List<Vardec> params = new ArrayList<Vardec>();
     	params.add(boolVardec.result);
         final Functiondef expectedFunctiondef = new FunctionDefinition(new IntType(),
-        													new IdentifierExp(new Identifier("myFunc")),
+        													new FunctNameExp(new FunctName("$myFunc")),
         													params,
         													new ReturnStmt(new IntegerExp(2)));
     	final List<Structdec> structdecs = new ArrayList<Structdec>();
@@ -911,53 +965,53 @@ public class ParserTest {
     public void testProgram() throws ParseException{
     	//struct MyStruct {
     	//int x;
-    	//int structFunc(Boolean x) return 2;
+    	//int $structFunc(Boolean x) return 2;
     	//}
-    	//int myFunc(Boolean x) return 2;
-    	//void newFunc(int y) return;
+    	//int $myFunc(Boolean x) return 2;
+    	//void $newFunc(int y) return;
     	final Parser parser = new Parser(Arrays.asList(new StructToken(),
     												   new StructNameToken("MyStruct"),
     												   new LeftCurlyToken(),
     												   new IntToken(),
-    												   new IdentifierToken("x"),
+    												   new VarToken("x"),
     												   new SemiColonToken(),
     												   new IntToken(),
-    												   new IdentifierToken("structFunc"),
+    												   new FunctNameToken("$structFunc"),
     												   new LeftParenToken(),
     												   new BooleanToken(),
-				   									   new IdentifierToken("x"),
+				   									   new VarToken("x"),
 				   									   new RightParenToken(),
 				   									   new ReturnToken(),
 				   									   new IntegerVariable(2),
 				   									   new SemiColonToken(),
 				   									   new RightCurlyToken(),
     												   new IntToken(),
-    												   new IdentifierToken("myFunc"),
+    												   new FunctNameToken("$myFunc"),
     												   new LeftParenToken(),
     												   new BooleanToken(),
-				   									   new IdentifierToken("x"),
+				   									   new VarToken("x"),
 				   									   new RightParenToken(),
 				   									   new ReturnToken(),
 				   									   new IntegerVariable(2),
 				   									   new SemiColonToken(),
 				   									   new VoidToken(),
-				   									   new IdentifierToken("newFunc"),
+				   									   new FunctNameToken("$newFunc"),
 				   									   new LeftParenToken(),
 				   									   new IntToken(),
-				   									   new IdentifierToken("y"),
+				   									   new VarToken("y"),
 				   									   new RightParenToken(),
 				   									   new ReturnToken(),
 				   									   new SemiColonToken()));
     	
     	//structuredeclaration instructions
-    	final ParseResult<Vardec> boolVardecStructs = new ParseResult<Vardec>(new Vardec(new BoolType(), new Identifier("x")), 2);
+    	final ParseResult<Vardec> boolVardecStructs = new ParseResult<Vardec>(new Vardec(new BoolType(), new Var("x")), 2);
     	List<Vardec> paramsStructs = new ArrayList<Vardec>();
     	paramsStructs.add(boolVardecStructs.result);
         final Functiondef expectedFunctiondefStructs = new FunctionDefinition(new IntType(),
-        													new IdentifierExp(new Identifier("structFunc")),
+        													new FunctNameExp(new FunctName("$structFunc")),
         													paramsStructs,
         													new ReturnStmt(new IntegerExp(2)));
-        final Vardec expectedVardec = new Vardec(new IntType(), new Identifier("x"));
+        final Vardec expectedVardec = new Vardec(new IntType(), new Var("x"));
     	final List<Vardec> vardecs = new ArrayList<Vardec>();
     	vardecs.add(expectedVardec);
     	final List<Functiondef> functiondefsStructs = new ArrayList<Functiondef>();
@@ -970,19 +1024,19 @@ public class ParserTest {
     	structdecs.add(newStructdec);
     	
     	//functiondefinition instructions for entry
-    	final ParseResult<Vardec> boolVardecFunctions = new ParseResult<Vardec>(new Vardec(new BoolType(), new Identifier("x")), 2);
+    	final ParseResult<Vardec> boolVardecFunctions = new ParseResult<Vardec>(new Vardec(new BoolType(), new Var("x")), 2);
     	List<Vardec> paramsFunctions = new ArrayList<Vardec>();
     	paramsFunctions.add(boolVardecFunctions.result);
         final Functiondef expectedFunctiondef = new FunctionDefinition(new IntType(),
-        													new IdentifierExp(new Identifier("myFunc")),
+        													new FunctNameExp(new FunctName("$myFunc")),
         													paramsFunctions,
         													new ReturnStmt(new IntegerExp(2)));
         //functiondefinitioninstructions for next function
-        final ParseResult<Vardec> voidVardec = new ParseResult<Vardec>(new Vardec(new IntType(), new Identifier("y")), 2);
+        final ParseResult<Vardec> voidVardec = new ParseResult<Vardec>(new Vardec(new IntType(), new Var("y")), 2);
     	List<Vardec> paramsNewFunction = new ArrayList<Vardec>();
     	paramsNewFunction.add(voidVardec.result);
         final Functiondef expectedNewFunctiondef = new FunctionDefinition(new VoidType(),
-        													new IdentifierExp(new Identifier("newFunc")),
+        													new FunctNameExp(new FunctName("$newFunc")),
         													paramsNewFunction,
         													new VoidReturnStmt());
         //adding functions to list
@@ -999,53 +1053,53 @@ public class ParserTest {
     public void testFullParser() throws ParseException{
     	//struct MyStruct {
     	//int x;
-    	//int structFunc(Boolean x) return 2;
+    	//int $structFunc(Boolean x) return 2;
     	//}
-    	//int myFunc(Boolean x) return 2;
-    	//void newFunc(int y) return;
+    	//int $myFunc(Boolean x) return 2;
+    	//void $newFunc(int y) return;
     	final Parser parser = new Parser(Arrays.asList(new StructToken(),
     												   new StructNameToken("MyStruct"),
     												   new LeftCurlyToken(),
     												   new IntToken(),
-    												   new IdentifierToken("x"),
+    												   new VarToken("x"),
     												   new SemiColonToken(),
     												   new IntToken(),
-    												   new IdentifierToken("structFunc"),
+    												   new FunctNameToken("$structFunc"),
     												   new LeftParenToken(),
     												   new BooleanToken(),
-				   									   new IdentifierToken("x"),
+				   									   new VarToken("x"),
 				   									   new RightParenToken(),
 				   									   new ReturnToken(),
 				   									   new IntegerVariable(2),
 				   									   new SemiColonToken(),
 				   									   new RightCurlyToken(),
     												   new IntToken(),
-    												   new IdentifierToken("myFunc"),
+    												   new FunctNameToken("$myFunc"),
     												   new LeftParenToken(),
     												   new BooleanToken(),
-				   									   new IdentifierToken("x"),
+				   									   new VarToken("x"),
 				   									   new RightParenToken(),
 				   									   new ReturnToken(),
 				   									   new IntegerVariable(2),
 				   									   new SemiColonToken(),
 				   									   new VoidToken(),
-				   									   new IdentifierToken("newFunc"),
+				   									   new FunctNameToken("$newFunc"),
 				   									   new LeftParenToken(),
 				   									   new IntToken(),
-				   									   new IdentifierToken("y"),
+				   									   new VarToken("y"),
 				   									   new RightParenToken(),
 				   									   new ReturnToken(),
 				   									   new SemiColonToken()));
     	
     	//structuredeclaration instructions
-    	final ParseResult<Vardec> boolVardecStructs = new ParseResult<Vardec>(new Vardec(new BoolType(), new Identifier("x")), 2);
+    	final ParseResult<Vardec> boolVardecStructs = new ParseResult<Vardec>(new Vardec(new BoolType(), new Var("x")), 2);
     	List<Vardec> paramsStructs = new ArrayList<Vardec>();
     	paramsStructs.add(boolVardecStructs.result);
         final Functiondef expectedFunctiondefStructs = new FunctionDefinition(new IntType(),
-        													new IdentifierExp(new Identifier("structFunc")),
+        													new FunctNameExp(new FunctName("$structFunc")),
         													paramsStructs,
         													new ReturnStmt(new IntegerExp(2)));
-        final Vardec expectedVardec = new Vardec(new IntType(), new Identifier("x"));
+        final Vardec expectedVardec = new Vardec(new IntType(), new Var("x"));
     	final List<Vardec> vardecs = new ArrayList<Vardec>();
     	vardecs.add(expectedVardec);
     	final List<Functiondef> functiondefsStructs = new ArrayList<Functiondef>();
@@ -1058,19 +1112,19 @@ public class ParserTest {
     	structdecs.add(newStructdec);
     	
     	//functiondefinition instructions for entry
-    	final ParseResult<Vardec> boolVardecFunctions = new ParseResult<Vardec>(new Vardec(new BoolType(), new Identifier("x")), 2);
+    	final ParseResult<Vardec> boolVardecFunctions = new ParseResult<Vardec>(new Vardec(new BoolType(), new Var("x")), 2);
     	List<Vardec> paramsFunctions = new ArrayList<Vardec>();
     	paramsFunctions.add(boolVardecFunctions.result);
         final Functiondef expectedFunctiondef = new FunctionDefinition(new IntType(),
-        													new IdentifierExp(new Identifier("myFunc")),
+        													new FunctNameExp(new FunctName("$myFunc")),
         													paramsFunctions,
         													new ReturnStmt(new IntegerExp(2)));
         //functiondefinitioninstructions for next function
-        final ParseResult<Vardec> voidVardec = new ParseResult<Vardec>(new Vardec(new IntType(), new Identifier("y")), 2);
+        final ParseResult<Vardec> voidVardec = new ParseResult<Vardec>(new Vardec(new IntType(), new Var("y")), 2);
     	List<Vardec> paramsNewFunction = new ArrayList<Vardec>();
     	paramsNewFunction.add(voidVardec.result);
         final Functiondef expectedNewFunctiondef = new FunctionDefinition(new VoidType(),
-        													new IdentifierExp(new Identifier("newFunc")),
+        													new FunctNameExp(new FunctName("$newFunc")),
         													paramsNewFunction,
         													new VoidReturnStmt());
         //adding functions to list

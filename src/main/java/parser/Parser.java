@@ -9,8 +9,8 @@ public class Parser {
     public Parser(final List<Token> tokens) {
         this.tokens = tokens;
     }
-    
-    public Token getToken(final int position) throws ParseException {
+
+	public Token getToken(final int position) throws ParseException {
         if (position >= 0 && position < tokens.size()) {
             return tokens.get(position);
         } else {
@@ -89,35 +89,45 @@ public class Parser {
     	if(token instanceof MultiplicationToken) {
     		final Token pointerToken = getToken(position + 1);
     		final ParseResult<Exp> pointer = parsePrimaryExp(position + 1);
-    		if(pointerToken instanceof IdentifierToken) {
+    		if(pointerToken instanceof VarToken) {
     			final ParseResult<Op> pointerOp = parsePointerOp(pointer.position - 2);
     			return new ParseResult<Exp>(new PointerExp(pointerOp.result,
     														pointer.result), 
     										pointer.position);
     		} else {
-    			throw new ParseException("expected IdentifierToken; received: " + pointerToken);
+    			throw new ParseException("expected VarToken; received: " + pointerToken);
     		}
     	} else if(token instanceof AddressToken) {
     		final Token addressToken = getToken(position + 1);
     		final ParseResult<Exp> address = parsePrimaryExp(position + 1);
-    		if(addressToken instanceof IdentifierToken) {
+    		if(addressToken instanceof VarToken || addressToken instanceof FunctNameToken) {
     			final ParseResult<Op> addressOp = parsePointerOp(address.position - 2);
     			return new ParseResult<Exp>(new PointerExp(addressOp.result,
     														address.result), 
     										address.position);
     		} else {
-    			throw new ParseException("expected IdentifierToken; received: " + addressToken);
+    			throw new ParseException("expected VarToken or FunctNameToken; received: " + addressToken);
     		}
-    	} else if(token instanceof IdentifierToken) {
-    		final String name = ((IdentifierToken)token).name;
+    	} else if(token instanceof VarToken) {
+    		final String name = ((VarToken)token).name;
     		List params = getParams(position + 1);
     		if(params != null) {
     			final int callPosition = (Integer) params.get(params.size() - 1);
-    			return new ParseResult<Exp>(new CallExp(new IdentifierExp(new Identifier(name)), params), callPosition);
+    			return new ParseResult<Exp>(new FunctPointerCallExp(new VarExp(new Var(name)), params), callPosition);
     		} else {
-        		return new ParseResult<Exp>(new IdentifierExp(new Identifier(name)), position + 1);
+        		return new ParseResult<Exp>(new VarExp(new Var(name)), position + 1);
     		}
-    	} else if(token instanceof IntegerVariable) {
+    	} else if(token instanceof FunctNameToken) {
+    		final String name = ((FunctNameToken)token).name;
+    		List params = getParams(position + 1);
+    		if(params != null) {
+    			final int callPosition = (Integer) params.get(params.size() - 1);
+    			return new ParseResult<Exp>(new FunctCallExp(new FunctNameExp(new FunctName(name)), params), callPosition);
+    		} else {
+        		return new ParseResult<Exp>(new FunctNameExp(new FunctName(name)), position + 1);
+    		}
+    	}
+    	else if(token instanceof IntegerVariable) {
     		final int value = ((IntegerVariable)token).value;
     		return new ParseResult<Exp>(new IntegerExp(value), position + 1);
     	} else if(token instanceof TrueToken) {
@@ -372,9 +382,9 @@ public class Parser {
 			return new ParseResult<Lhs>(new PointerLhs(pointerLhsOp.result,
 													   lhs.result), 
 										lhs.position);
-		} else if(lhsToken instanceof IdentifierToken) {
-			final ParseResult<Exp> identifier = parsePrimaryExp(position);
-			return new ParseResult<Lhs>(new IdentifierLhs(identifier.result), position + 1);
+		} else if(lhsToken instanceof VarToken) {
+			final ParseResult<Exp> var = parsePrimaryExp(position);
+			return new ParseResult<Lhs>(new VarLhs(var.result), position + 1);
 		} else {
 			throw new ParseException("expected primaryLhs; recieved: " + lhsToken);
 		}
@@ -477,13 +487,13 @@ public class Parser {
     public ParseResult<Vardec> parseVardec(final int position) throws ParseException{
 		final ParseResult<Type> type = parseType(position);
 		final Token token = getToken(type.position);
-		if(token instanceof IdentifierToken) {
-			final String name = ((IdentifierToken)token).name;
+		if(token instanceof VarToken) {
+			final String name = ((VarToken)token).name;
 			return new ParseResult<Vardec>(new Vardec(type.result, 
-													 new Identifier(name)), 
+													 new Var(name)), 
 										   type.position + 1);
 		} else {
-			throw new ParseException("expected identifier; recieved: " + token);
+			throw new ParseException("expected var; recieved: " + token);
 		}
 	}
     
@@ -576,7 +586,7 @@ public class Parser {
   	public ParseResult<Functiondef> parseFunctiondef(final int position) throws ParseException {
         final ParseResult<Type> returnType = parseType(position);
         final Token token = getToken(returnType.position);
-        if(token instanceof IdentifierToken) {
+        if(token instanceof FunctNameToken) {
         	final ParseResult<Exp> functionname = parsePrimaryExp(returnType.position);
         	assertTokenHereIs(functionname.position, new LeftParenToken());
         	final List<Vardec> parameters = new ArrayList<Vardec>();
@@ -606,7 +616,7 @@ public class Parser {
             														   body.result),
                     							body.position);
         } else {
-        	throw new ParseException("expected identifier; recieved: " + token);
+        	throw new ParseException("expected FunctName; recieved: " + token);
         }
 	}
   	
