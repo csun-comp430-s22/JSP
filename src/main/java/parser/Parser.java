@@ -610,7 +610,7 @@ public class Parser {
             }
             assertTokenHereIs(curPosition, new RightParenToken());
             final ParseResult<Stmt> body = parseStmt(curPosition + 1);
-            return new ParseResult<Functiondef>(new FunctionDefinition(returnType.result, 
+            return new ParseResult<Functiondef>(new Functiondef(returnType.result, 
             														   functionname.result, 
             														   parameters, 
             														   body.result),
@@ -657,7 +657,7 @@ public class Parser {
 	            }
 	            
 	            assertTokenHereIs(curPosition, new RightCurlyToken());
-  				return new ParseResult<Structdec>(new StructureDeclaration(structName.result, vardecs, functiondefs),
+  				return new ParseResult<Structdec>(new Structdec(structName.result, vardecs, functiondefs),
   												  curPosition + 1);
   			} else {
   				throw new ParseException("expected structName; recieved: " + structNameToken);

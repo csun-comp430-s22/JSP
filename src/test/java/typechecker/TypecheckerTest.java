@@ -14,8 +14,8 @@ import java.util.HashMap;
 import java.util.List;
 
 public class TypecheckerTest {
-    public static final Map<Identifier, Type> emptyTypeEnvironment =
-        new HashMap<Identifier, Type>();
+    public static final Map<Var, Type> emptyTypeEnvironment =
+        new HashMap<Var, Type>();
 
     public static Type typeof(final Exp exp) throws TypeErrorException {
 
@@ -53,7 +53,6 @@ public class TypecheckerTest {
         final String booleanTypeString = "true";
         final Program myBoolean = createProgram(booleanTypeString);
         final Typechecker typechecker = new Typechecker(myBoolean);
-        final Type  myBoolType = typechecker.typecheck();
-        assertEquals(new BoolType(), myBoolType);
+        typechecker.typecheck();
     }
 }

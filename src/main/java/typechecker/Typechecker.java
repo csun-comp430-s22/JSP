@@ -31,12 +31,12 @@ public class Typechecker{
         return getPointer(fname, pointers);
     }*/
 	
-	public final Map<FunctName, FunctionDefinition> functions;
+	public final Map<FunctName, Functiondef> functions;
 	
 	public Typechecker(final Program program) throws TypeErrorException {
         this.program = program;
-        functions = new HashMap<FunctName, FunctionDefinition>();
-        for (final FunctionDefinition fdef : program.functions) {
+        functions = new HashMap<FunctName, Functiondef>();
+        for (final Functiondef fdef : program.functions) {
             if (!functions.containsKey(fdef.functionName)) {
                 functions.put((FunctName) fdef.functionName,fdef);
             } else {
@@ -64,7 +64,7 @@ public class Typechecker{
 	}
 	
 	public Type typeofFunctionCall(final FunctCallExp exp, final Map<Var, Type> typeEnvironment) throws TypeErrorException{
-		final FunctionDefinition fdef = (FunctionDefinition) getFunctionByName(exp.fname);
+		final Functiondef fdef = (Functiondef) getFunctionByName(exp.fname);
 		if(exp.params.size() != fdef.params.size()) {
 			throw new TypeErrorException("Wrong number of arguments for function: " + fdef.functionName);
 		}
@@ -81,7 +81,7 @@ public class Typechecker{
 	}
 	
 	public Type typeofFunctionPointerCall(final FunctPointerCallExp exp, final Map<Var, Type> typeEnviornment) throws TypeErrorException{
-		final FunctionDefinition fdef = (FunctionDefinition) getFunctionByType(exp.var);
+		final Functiondef fdef = (Functiondef) getFunctionByType(exp.var);
 		
 		if(exp.params.size() != fdef.params.size()) {
 			throw new TypeErrorException("Wrong number of pointers for function: " + fdef.functionName);
@@ -96,7 +96,6 @@ public class Typechecker{
 			}
 		}
 		return fdef.returnType;
-		}
 	}
 	
 	//op ::= + | - | * | / | . | < | > | && || ==
@@ -265,7 +264,7 @@ public class Typechecker{
 											  final Type returnType) throws TypeErrorException{
 		Map<Var, Type> typeEnviornment = originalTypeEnviornment;
 		
-		for(final Stmt stmt : asBlock.body) {
+		for(final Stmt stmt : asBlock.stmt) {
 			typeEnviornment = typecheckStmt(stmt, typeEnviornment, returnType);
 		}
 		return originalTypeEnviornment;
@@ -297,7 +296,7 @@ public class Typechecker{
 	}
 	
 	//fundef ::= type fname(vardec*) stmt
-	public void typecheckFunction(final FunctionDefinition funcdef) throws TypeErrorException{
+	public void typecheckFunction(final Functiondef funcdef) throws TypeErrorException{
 		final Map<Var, Type> typeEnviornment = new HashMap<Var, Type>();
 		for(final Vardec var : funcdef.params) {
 			if(!typeEnviornment.containsKey(var.var)) {
@@ -310,14 +309,14 @@ public class Typechecker{
 	}
 	
 	public void typecheckWholeProgram() throws TypeErrorException{
-		for(final FunctionDefinition fdef : program.functions) {
+		for(final Functiondef fdef : program.functions) {
 			typecheckFunction(fdef);
 		}
 	}
 
-	public Type typecheck() throws TypeErrorException {
+	public void typecheck() throws TypeErrorException {
 		for(final Functiondef fdef : program.functions) {
-			typecheckFunction((FunctionDefinition) fdef);
+			typecheckFunction((Functiondef) fdef);
 		}
 	}
 }
