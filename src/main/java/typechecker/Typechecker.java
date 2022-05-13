@@ -11,28 +11,10 @@ import java.util.HashMap;
 
 public class Typechecker{
 	public final Program program;
-	public static final String BASE_FUNCTION = "Pointer";
 	
 	public final Map<FunctName, FunctionDefinition> functions;
 	//public final Map<FunctionName, Map<Vardec, FunctionDefinition>> pointers;
-	
-	public static final FunctionDefinition getFunction(final FunctName functionName, final Map<FunctName, FunctionDefinition> func) throws TypeErrorException{
-		if(functionName.name.equals(BASE_FUNCTION)) {
-			return null;
-		}else {
-			final FunctionDefinition funcdef = func.get(functionName);
-			if(funcdef == null) {
-				throw new TypeErrorException("No such function: " + functionName);
-			}else {
-				return funcdef;
-			}
-		}
-	}
-	
-	public FunctionDefinition getFunction(final FunctName functionName) throws TypeErrorException{
-		return getFunction(functionName, functions);
-	}
-	
+
 	//public static Map<FunctionName, FunctionDefinition> pointersForFunction(final FunctionName functionName, final Map<FunctionName, FunctionDefinition> functions) throws TypeErrorException{}
 	
 	public Typechecker(final Program program) throws TypeErrorException {
