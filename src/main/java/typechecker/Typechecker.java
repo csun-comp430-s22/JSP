@@ -164,7 +164,7 @@ public class Typechecker{
 												 final Map<Var, Type> typeEnviornment,
 												 final Type returnType) throws TypeErrorException{
 		final Type expectedType = asDec.vardec.type;
-		final Type receivedType = typeofExp((Exp) asDec.vardec, typeEnviornment);
+		final Type receivedType = typeofExp((Exp) asDec.vardec.var, typeEnviornment);
 		
 		if(receivedType.equals(expectedType)) {
 			return addToMap(typeEnviornment, asDec.vardec.var, expectedType);
