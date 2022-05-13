@@ -11,11 +11,27 @@ import java.util.HashMap;
 
 public class Typechecker{
 	public final Program program;
+	/*public static final String BASE_FUNCTION = "Pointer";
+	
+	public static FunctionDefinition getPointer(final FunctName fname,
+            final Map<FunctName, FunctionDefinition> pointers) throws TypeErrorException {
+        if (fname.name.equals(BASE_FUNCTION)) {
+            return null;
+        } else {
+            final FunctionDefinition fdef = pointers.get(fname);
+            if (fdef == null) {
+                throw new TypeErrorException("no such function pointer: " + fname);
+            } else {
+                return fdef;
+            }
+        }
+    }
+
+    public FunctionDefinition getPointer(final FunctName fname) throws TypeErrorException {
+        return getPointer(fname, pointers);
+    }*/
 	
 	public final Map<FunctName, FunctionDefinition> functions;
-	//public final Map<FunctionName, Map<Vardec, FunctionDefinition>> pointers;
-
-	//public static Map<FunctionName, FunctionDefinition> pointersForFunction(final FunctionName functionName, final Map<FunctionName, FunctionDefinition> functions) throws TypeErrorException{}
 	
 	public Typechecker(final Program program) throws TypeErrorException {
         this.program = program;
@@ -38,6 +54,15 @@ public class Typechecker{
 		}
 	}
 	
+	public Functiondef getFunctionByType(final VarExp exp) throws TypeErrorException{
+		final Functiondef fdef = functions.get(exp);
+		if(fdef == null) {
+			throw new TypeErrorException("No function with type: " + exp);
+		}else {
+			return fdef;
+		}
+	}
+	
 	public Type typeofFunctionCall(final FunctCallExp exp, final Map<Var, Type> typeEnvironment) throws TypeErrorException{
 		final FunctionDefinition fdef = (FunctionDefinition) getFunctionByName(exp.fname);
 		if(exp.params.size() != fdef.params.size()) {
@@ -45,20 +70,40 @@ public class Typechecker{
 		}
 		
 		for(int index = 0; index < exp.params.size(); index++) {
-			final Type recievedArgumentType = typeofExp((Exp) exp.params.get(index), typeEnvironment);
-			final Type expectedArgumentType = fdef.params.get(index).type;
+			final Type recievedParamType = typeofExp((Exp) exp.params.get(index), typeEnvironment);
+			final Type expectedParamType = fdef.params.get(index).type;
 			
-			if(!recievedArgumentType.equals(expectedArgumentType)) {
+			if(!recievedParamType.equals(expectedParamType)) {
 				throw new TypeErrorException("Type mismatch on function call argument");
 			}
 		}
 		return fdef.returnType;
 	}
 	
+	public Type typeofFunctionPointerCall(final FunctPointerCallExp exp, final Map<Var, Type> typeEnviornment) throws TypeErrorException{
+		final FunctionDefinition fdef = (FunctionDefinition) getFunctionByType(exp.var);
+		
+		if(exp.params.size() != fdef.params.size()) {
+			throw new TypeErrorException("Wrong number of pointers for function: " + fdef.functionName);
+		}
+		
+		for(int index = 0; index < exp.params.size(); index++) {
+			final Type recievedParamType = typeofExp((Exp)exp.params.get(index), typeEnviornment);
+			final Type expectedParamType = fdef.params.get(index).type;
+			
+			if(!recievedParamType.equals(expectedParamType)) {
+				throw new TypeErrorException("Type mismatch on function call argument");
+			}
+		}
+		return fdef.returnType;
+		}
+	}
+	
 	//op ::= + | - | * | / | . | < | > | && || ==
 	public Type typeofOp(final OpExp exp, final Map<Var, Type> typeEnvironment) throws TypeErrorException{
 		final Type leftType = typeofExp(exp.left, typeEnvironment);
 		final Type rightType = typeofExp(exp.right, typeEnvironment);
+		
 		if(exp.op instanceof AddOp) {
 			if(leftType instanceof IntType && rightType instanceof IntType) {
 				return new IntType();
@@ -87,7 +132,7 @@ public class Typechecker{
 			if(leftType instanceof IntType && rightType instanceof IntType) {
 				return new IntType();
 			}else {
-				throw new TypeErrorException("Incorrect type for .");
+				throw new TypeErrorException("Incorrect type for field.");
 			}
 		}else if(exp.op instanceof PointerOp) {
 			if(leftType instanceof IntType && rightType instanceof IntType) {
@@ -97,6 +142,13 @@ public class Typechecker{
 			}
 		}
 		else if(exp.op instanceof PointerLhsOp) {
+			if(leftType instanceof IntType) {
+				return new IntType();
+			}else {
+				throw new TypeErrorException("Incorrect type for");
+			}
+		}
+		else if(exp.op instanceof PointerTypeOp) {
 			if(leftType instanceof IntType) {
 				return new IntType();
 			}else {
@@ -225,6 +277,7 @@ public class Typechecker{
 		typeofExp(((PrintStmt)asPrint).exp, originalTypeEnviornemnt);
 		return originalTypeEnviornemnt;
 	}
+	
 	public Map<Var, Type> typecheckStmt(final Stmt stmt,
 											   final Map<Var, Type> typeEnviornment, 
 											   final Type returnType) throws TypeErrorException{
