@@ -314,4 +314,10 @@ public class Typechecker{
 			typecheckFunction(fdef);
 		}
 	}
+
+	public Type typecheck() throws TypeErrorException {
+		for(final Functiondef fdef : program.functions) {
+			typecheckFunction((FunctionDefinition) fdef);
+		}
+	}
 }
