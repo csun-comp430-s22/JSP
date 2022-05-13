@@ -107,6 +107,19 @@ public class Typechecker{
 			}else {
 				throw new TypeErrorException("Incorrect type for .");
 			}
+		}else if(exp.op instanceof PointerOp) {
+			if(leftType instanceof IntType && rightType instanceof IntType) {
+				return new IntType();
+			}else {
+				throw new TypeErrorException("Incorrect type for var*");
+			}
+		}
+		else if(exp.op instanceof PointerLhsOp) {
+			if(leftType instanceof IntType) {
+				return new IntType();
+			}else {
+				throw new TypeErrorException("Incorrect type for");
+			}
 		}
 		else if(exp.op instanceof LessThanOp) {
 			if(leftType instanceof IntType && rightType instanceof IntType) {
@@ -203,8 +216,8 @@ public class Typechecker{
 	}
 	
 	public Map<Var, Type> typecheckReturn(final ReturnStmt asReturn,
-            final Map<Var, Type> typeEnvironment,
-            final Type returnType) throws TypeErrorException {
+            								final Map<Var, Type> typeEnvironment,
+            								final Type returnType) throws TypeErrorException {
 			final Type receivedType = typeofExp(asReturn.exp, typeEnvironment);
 			if (returnType.equals(receivedType)) {
 				return typeEnvironment;
@@ -224,6 +237,12 @@ public class Typechecker{
 		return originalTypeEnviornment;
 	}
 	
+	public Map<Var, Type> typecheckPrint(final PrintStmt asPrint,
+										final Map<Var, Type> originalTypeEnviornemnt,
+										final Type returnType) throws TypeErrorException{
+		typeofExp(((PrintStmt)asPrint).exp, originalTypeEnviornemnt);
+		return originalTypeEnviornemnt;
+	}
 	public Map<Var, Type> typecheckStmt(final Stmt stmt,
 											   final Map<Var, Type> typeEnviornment, 
 											   final Type returnType) throws TypeErrorException{
@@ -235,6 +254,8 @@ public class Typechecker{
 			return typecheckWhile((WhileStmt)stmt, typeEnviornment, returnType);
 		}else if(stmt instanceof ReturnStmt) {
 			return typecheckReturn((ReturnStmt)stmt, typeEnviornment, returnType);
+		}else if(stmt instanceof PrintStmt){
+			return typecheckPrint((PrintStmt)stmt, typeEnviornment, returnType);
 		}else {
 			throw new TypeErrorException("Unsupported statement: " + stmt);
 		}
