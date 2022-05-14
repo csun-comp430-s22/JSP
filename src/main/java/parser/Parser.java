@@ -490,7 +490,7 @@ public class Parser {
 		if(token instanceof VarToken) {
 			final String name = ((VarToken)token).name;
 			return new ParseResult<Vardec>(new Vardec(type.result, 
-													 new Var(name)), 
+													 new VarExp(new Var(name))), 
 										   type.position + 1);
 		} else {
 			throw new ParseException("expected var; recieved: " + token);

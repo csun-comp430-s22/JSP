@@ -691,7 +691,7 @@ public class ParserTest {
     	final Parser parser = new Parser(Arrays.asList(new IntToken(), 
 				   									   new VarToken("x"),
 				   									   new SemiColonToken()));
-    	final Stmt expected = new VardecStmt(new Vardec(new IntType(), new Var("x")));
+    	final Stmt expected = new VardecStmt(new Vardec(new IntType(), new VarExp(new Var("x"))));
         assertEquals(new ParseResult<Stmt>(expected, 3), parser.parseStmt(0));
     } 
     
@@ -716,7 +716,7 @@ public class ParserTest {
     	//int x
     	final Parser parser = new Parser(Arrays.asList(new IntToken(), 
     												   new VarToken("x")));
-        final Vardec expected = new Vardec(new IntType(), new Var("x"));
+        final Vardec expected = new Vardec(new IntType(), new VarExp(new Var("x")));
         assertEquals(new ParseResult<Vardec>(expected, 2), parser.parseVardec(0));
     } 
     
@@ -786,7 +786,9 @@ public class ParserTest {
     @Test
     public void testFunctionDefinitionsOneParam() throws ParseException{
     	//int $myFunc(Boolean x) return 2;
-    	final ParseResult<Vardec> boolVardec = new ParseResult<Vardec>(new Vardec(new BoolType(), new Var("x")), 2);
+    	final ParseResult<Vardec> boolVardec = new ParseResult<Vardec>(new Vardec(new BoolType(), 
+    																			  new VarExp(new Var("x"))), 
+    																   2);
     	List<Vardec> params = new ArrayList<Vardec>();
     	params.add(boolVardec.result);
     	final Parser parser = new Parser(Arrays.asList(new IntToken(),
@@ -809,10 +811,12 @@ public class ParserTest {
     public void testFunctionDefinitionsMultiParam() throws ParseException{
     	//void $testFunc(MyStruct test, Int* test2) print(y);
     	final ParseResult<Vardec> structNameVardec = new ParseResult<Vardec>(new Vardec(new StructNameType(new StructName("MyStruct")), 
-    																					new Var("test")), 2);
+    																					new VarExp(new Var("test"))), 
+    																		 2);
     	final ParseResult<Vardec> intPointerVardec = new ParseResult<Vardec>(new Vardec(new PointerType(new IntType(),
     																									new PointerTypeOp()), 
-    																					new Var("test2")), 2);
+    																					new VarExp(new Var("test2"))), 
+    																		 2);
     	List<Vardec> params = new ArrayList<Vardec>();
     	params.add(structNameVardec.result);
     	params.add(intPointerVardec.result);
@@ -850,7 +854,7 @@ public class ParserTest {
     												   new VarToken("x"),
     												   new SemiColonToken(),
 				   									   new RightCurlyToken()));
-        final Vardec expectedVardec = new Vardec(new IntType(), new Var("x"));
+        final Vardec expectedVardec = new Vardec(new IntType(), new VarExp(new Var("x")));
     	final List<Vardec> vardecs = new ArrayList<Vardec>();
     	vardecs.add(expectedVardec);
     	final List<Functiondef> functiondefs = new ArrayList<Functiondef>();
@@ -878,7 +882,9 @@ public class ParserTest {
 				   									   new IntegerVariable(2),
 				   									   new SemiColonToken(),
 				   									   new RightCurlyToken()));
-    	final ParseResult<Vardec> boolVardec = new ParseResult<Vardec>(new Vardec(new BoolType(), new Var("x")), 2);
+    	final ParseResult<Vardec> boolVardec = new ParseResult<Vardec>(new Vardec(new BoolType(), 
+    																			  new VarExp(new Var("x"))), 
+    																   2);
     	List<Vardec> params = new ArrayList<Vardec>();
     	params.add(boolVardec.result);
         final Functiondef expectedFunctiondef = new Functiondef(new IntType(),
@@ -916,14 +922,16 @@ public class ParserTest {
 				   									   new IntegerVariable(2),
 				   									   new SemiColonToken(),
 				   									   new RightCurlyToken()));
-    	final ParseResult<Vardec> boolVardec = new ParseResult<Vardec>(new Vardec(new BoolType(), new Var("x")), 2);
+    	final ParseResult<Vardec> boolVardec = new ParseResult<Vardec>(new Vardec(new BoolType(), 
+    																			  new VarExp(new Var("x"))), 
+    																   2);
     	List<Vardec> params = new ArrayList<Vardec>();
     	params.add(boolVardec.result);
         final Functiondef expectedFunctiondef = new Functiondef(new IntType(),
         														new FunctNameExp(new FunctName("$myFunc")),
         														params,
         														new ReturnStmt(new IntegerExp(2)));
-        final Vardec expectedVardec = new Vardec(new IntType(), new Var("x"));
+        final Vardec expectedVardec = new Vardec(new IntType(), new VarExp(new Var("x")));
     	final List<Vardec> vardecs = new ArrayList<Vardec>();
     	vardecs.add(expectedVardec);
     	final List<Functiondef> functiondefs = new ArrayList<Functiondef>();
@@ -946,7 +954,9 @@ public class ParserTest {
 				   									   new ReturnToken(),
 				   									   new IntegerVariable(2),
 				   									   new SemiColonToken()));
-    	final ParseResult<Vardec> boolVardec = new ParseResult<Vardec>(new Vardec(new BoolType(), new Var("x")), 2);
+    	final ParseResult<Vardec> boolVardec = new ParseResult<Vardec>(new Vardec(new BoolType(), 
+    																			  new VarExp(new Var("x"))), 
+    																   2);
     	List<Vardec> params = new ArrayList<Vardec>();
     	params.add(boolVardec.result);
         final Functiondef expectedFunctiondef = new Functiondef(new IntType(),
@@ -1004,14 +1014,16 @@ public class ParserTest {
 				   									   new SemiColonToken()));
     	
     	//structuredeclaration instructions
-    	final ParseResult<Vardec> boolVardecStructs = new ParseResult<Vardec>(new Vardec(new BoolType(), new Var("x")), 2);
+    	final ParseResult<Vardec> boolVardecStructs = new ParseResult<Vardec>(new Vardec(new BoolType(), 
+    																					 new VarExp(new Var("x"))), 
+    																		  2);
     	List<Vardec> paramsStructs = new ArrayList<Vardec>();
     	paramsStructs.add(boolVardecStructs.result);
         final Functiondef expectedFunctiondefStructs = new Functiondef(new IntType(),
         															   new FunctNameExp(new FunctName("$structFunc")),
         															   paramsStructs,
         															   new ReturnStmt(new IntegerExp(2)));
-        final Vardec expectedVardec = new Vardec(new IntType(), new Var("x"));
+        final Vardec expectedVardec = new Vardec(new IntType(), new VarExp(new Var("x")));
     	final List<Vardec> vardecs = new ArrayList<Vardec>();
     	vardecs.add(expectedVardec);
     	final List<Functiondef> functiondefsStructs = new ArrayList<Functiondef>();
@@ -1024,7 +1036,9 @@ public class ParserTest {
     	structdecs.add(newStructdec);
     	
     	//functiondefinition instructions for entry
-    	final ParseResult<Vardec> boolVardecFunctions = new ParseResult<Vardec>(new Vardec(new BoolType(), new Var("x")), 2);
+    	final ParseResult<Vardec> boolVardecFunctions = new ParseResult<Vardec>(new Vardec(new BoolType(), 
+    																					   new VarExp(new Var("x"))), 
+    																			2);
     	List<Vardec> paramsFunctions = new ArrayList<Vardec>();
     	paramsFunctions.add(boolVardecFunctions.result);
         final Functiondef expectedFunctiondef = new Functiondef(new IntType(),
@@ -1032,7 +1046,9 @@ public class ParserTest {
         														paramsFunctions,
         														new ReturnStmt(new IntegerExp(2)));
         //functiondefinitioninstructions for next function
-        final ParseResult<Vardec> voidVardec = new ParseResult<Vardec>(new Vardec(new IntType(), new Var("y")), 2);
+        final ParseResult<Vardec> voidVardec = new ParseResult<Vardec>(new Vardec(new IntType(), 
+        																		  new VarExp(new Var("y"))), 
+        															   2);
     	List<Vardec> paramsNewFunction = new ArrayList<Vardec>();
     	paramsNewFunction.add(voidVardec.result);
         final Functiondef expectedNewFunctiondef = new Functiondef(new VoidType(),
@@ -1092,14 +1108,16 @@ public class ParserTest {
 				   									   new SemiColonToken()));
     	
     	//structuredeclaration instructions
-    	final ParseResult<Vardec> boolVardecStructs = new ParseResult<Vardec>(new Vardec(new BoolType(), new Var("x")), 2);
+    	final ParseResult<Vardec> boolVardecStructs = new ParseResult<Vardec>(new Vardec(new BoolType(), 
+    																					 new VarExp(new Var("x"))), 
+    																		  2);
     	List<Vardec> paramsStructs = new ArrayList<Vardec>();
     	paramsStructs.add(boolVardecStructs.result);
         final Functiondef expectedFunctiondefStructs = new Functiondef(new IntType(),
         															   new FunctNameExp(new FunctName("$structFunc")),
         															   paramsStructs,
         															   new ReturnStmt(new IntegerExp(2)));
-        final Vardec expectedVardec = new Vardec(new IntType(), new Var("x"));
+        final Vardec expectedVardec = new Vardec(new IntType(), new VarExp(new Var("x")));
     	final List<Vardec> vardecs = new ArrayList<Vardec>();
     	vardecs.add(expectedVardec);
     	final List<Functiondef> functiondefsStructs = new ArrayList<Functiondef>();
@@ -1112,7 +1130,9 @@ public class ParserTest {
     	structdecs.add(newStructdec);
     	
     	//functiondefinition instructions for entry
-    	final ParseResult<Vardec> boolVardecFunctions = new ParseResult<Vardec>(new Vardec(new BoolType(), new Var("x")), 2);
+    	final ParseResult<Vardec> boolVardecFunctions = new ParseResult<Vardec>(new Vardec(new BoolType(), 
+    																					   new VarExp(new Var("x"))), 
+    																			2);
     	List<Vardec> paramsFunctions = new ArrayList<Vardec>();
     	paramsFunctions.add(boolVardecFunctions.result);
         final Functiondef expectedFunctiondef = new Functiondef(new IntType(),
@@ -1120,7 +1140,9 @@ public class ParserTest {
         														paramsFunctions,
         														new ReturnStmt(new IntegerExp(2)));
         //functiondefinitioninstructions for next function
-        final ParseResult<Vardec> voidVardec = new ParseResult<Vardec>(new Vardec(new IntType(), new Var("y")), 2);
+        final ParseResult<Vardec> voidVardec = new ParseResult<Vardec>(new Vardec(new IntType(), 
+        																		  new VarExp(new Var("y"))), 
+        															   2);
     	List<Vardec> paramsNewFunction = new ArrayList<Vardec>();
     	paramsNewFunction.add(voidVardec.result);
         final Functiondef expectedNewFunctiondef = new Functiondef(new VoidType(),
