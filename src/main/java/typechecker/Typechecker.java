@@ -127,7 +127,7 @@ public class Typechecker{
 			}else {
 				throw new TypeErrorException("Incorrect types for /");
 			}
-		}else if(exp.op instanceof DotOp) {
+		}/*else if(exp.op instanceof DotOp) {
 			if(leftType instanceof IntType && rightType instanceof IntType) {
 				return new IntType();
 			}else {
@@ -153,7 +153,7 @@ public class Typechecker{
 			}else {
 				throw new TypeErrorException("Incorrect type for");
 			}
-		}
+		}*/
 		else if(exp.op instanceof LessThanOp) {
 			if(leftType instanceof IntType && rightType instanceof IntType) {
 				return new BoolType();
@@ -167,7 +167,7 @@ public class Typechecker{
 				throw new TypeErrorException("Incorrect types for >");
 			}
 		}else if(exp.op instanceof EqualToOp) {
-			if(leftType instanceof BoolType && rightType instanceof BoolType) {
+			if(leftType instanceof IntType && rightType instanceof IntType) {
 				return new BoolType();
 			}else {
 				throw new TypeErrorException("Incorrect types for ==");
