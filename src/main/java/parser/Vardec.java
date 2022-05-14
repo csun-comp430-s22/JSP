@@ -2,12 +2,12 @@ package parser;
 
 public class Vardec {
 	public final Type type;
-    public final Var var;
+    public final VarExp var;
 
     public Vardec(final Type type,
-                  final Var var) {
+                  final VarExp varExp) {
         this.type = type;
-        this.var = var;
+        this.var = varExp;
     }
 
     public int hashCode() {
